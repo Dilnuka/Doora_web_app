@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from "react";
 import mqtt from "mqtt";
 import { useSession } from "next-auth/react";
+import { DEFAULT_ROOM_STATE } from "@/lib/roomState";
 
 const SimulationContext = createContext();
 
@@ -10,34 +11,65 @@ export const SimulationProvider = ({ children }) => {
   const { data: session } = useSession();
   const roomId = session?.user?.roomId || null;
 
-  const [roomState, setRoomState] = useState({
-    lights: {
-      master: false,
-      kitchen: false,
-      bath: false,
-      bed: false,
-      living: false,
-    },
-    ac: { isOn: true, temp: 22 },
-    ambientTemp: 24.5,
-    tv: false,
-    curtains: { living: false, bed: false },
-    doorLocked: true,
-    occupancy: true,
-    smokeDetected: false,
-    coffeeMaker: false,
-    windowOpen: { living: false, bed: false },
-    alarm: { enabled: false, time: "07:00", ringing: false },
-  });
-
+  const [roomState, setRoomState] = useState(DEFAULT_ROOM_STATE);
   const [serviceQueue, setServiceQueue] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const mqttClientRef = useRef(null);
   const clientId = useMemo(() => Math.random().toString(36).substring(7), []);
   const TOPIC_SYNC = useMemo(() => {
     return roomId ? `doora/demo/rooms/${roomId}/sync` : null;
   }, [roomId]);
+
+  // Restore last saved state from DB when the user logs in (survives logout).
+  useEffect(() => {
+    if (!roomId) {
+      setIsHydrated(false);
+      setRoomState(DEFAULT_ROOM_STATE);
+      setServiceQueue([]);
+      setLogs([]);
+      return;
+    }
+
+    let cancelled = false;
+    setIsHydrated(false);
+
+    (async () => {
+      try {
+        const res = await fetch("/api/room/state");
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.roomState) setRoomState(data.roomState);
+        if (Array.isArray(data.serviceQueue)) setServiceQueue(data.serviceQueue);
+        if (Array.isArray(data.logs)) setLogs(data.logs);
+      } catch (e) {
+        console.error("Failed to load persisted room state", e);
+      } finally {
+        if (!cancelled) setIsHydrated(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roomId]);
+
+  // Persist state to DB (debounced) so logout/login keeps controller changes.
+  useEffect(() => {
+    if (!roomId || !isHydrated) return;
+
+    const timer = setTimeout(() => {
+      fetch("/api/room/state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roomState, serviceQueue, logs }),
+      }).catch((e) => console.error("Failed to persist room state", e));
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [roomId, isHydrated, roomState, serviceQueue, logs]);
 
   const addLog = useCallback(
     (message, source = "system") => {
