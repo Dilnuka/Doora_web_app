@@ -10,7 +10,7 @@ export default defineConfig({
     seed: "node prisma/seed.js",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
-    directUrl: process.env["DIRECT_URL"],
+    // Prisma 7: CLI/migrations use `url` only (no directUrl). Prefer direct connection when pooled.
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });
