@@ -2,11 +2,11 @@
 import React, { useState } from "react";
 import { useSimulation } from "@/context/SimulationContext";
 import { Bell, Terminal, Clock, ChevronDown, ChevronUp, User, LogOut } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function SystemLogs() {
-  const { serviceQueue, logs } = useSimulation();
+  const { serviceQueue, logs, signOutAndSave } = useSimulation();
   const [isOpen, setIsOpen] = useState(true);
   const { data: session } = useSession();
   const displayName = session?.user?.name || session?.user?.email || "Guest";
@@ -38,7 +38,7 @@ export default function SystemLogs() {
 
         {/* Logout button */}
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={() => signOutAndSave()}
           title="Sign out"
           style={{
             width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,

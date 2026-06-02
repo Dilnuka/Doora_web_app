@@ -2,10 +2,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSimulation } from "@/context/SimulationContext";
 import { Send, Lightbulb, Thermometer, User, Tv, Blinds, Lock, Unlock, Wind, Mic, MicOff, Cloud, Sun, CloudRain, Power, Plus, Minus, MapPin, ShieldAlert, AlarmClock, BellRing, LogOut } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function GuestApp() {
-  const { roomState, setLight, setAc, setTv, setCurtains, setDoor, setWindow, setCoffee, setSmoke, addLog, setAlarm, dismissAlarm } = useSimulation();
+  const { roomState, setLight, setAc, setTv, setCurtains, setDoor, setWindow, setCoffee, setSmoke, addLog, setAlarm, dismissAlarm, signOutAndSave } = useSimulation();
   const { data: session } = useSession();
   const displayName = session?.user?.name || session?.user?.email || "Guest";
   const roomLabel = session?.user?.roomCode || "Private Suite";
@@ -192,7 +192,7 @@ export default function GuestApp() {
             </div>
             {/* Logout button */}
             <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
+              onClick={() => signOutAndSave()}
               title="Sign out"
               style={{
                 marginLeft: '16px',

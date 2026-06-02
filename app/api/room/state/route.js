@@ -61,6 +61,10 @@ export async function PUT(req) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("PUT /api/room/state:", error);
-    return NextResponse.json({ error: "Failed to save room state." }, { status: 500 });
+    const message =
+      error?.code === "P2022"
+        ? "Database schema is missing Room.state — run: npx prisma db push"
+        : "Failed to save room state.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

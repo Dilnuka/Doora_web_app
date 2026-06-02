@@ -1,10 +1,12 @@
 "use client";
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { LogOut } from 'lucide-react';
+import { useSimulation } from '@/context/SimulationContext';
 
 export default function Home() {
   const { data: session } = useSession();
+  const { signOutAndSave } = useSimulation();
 
   return (
     <main style={{ width: '100vw', height: '100vh', background: '#0a0b10', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
@@ -16,7 +18,7 @@ export default function Home() {
             <span style={{ fontSize: '12px', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.2)', padding: '2px 8px', borderRadius: '12px', marginTop: '4px' }}>{session.user.role}</span>
           </div>
           <button 
-            onClick={() => signOut()}
+            onClick={() => signOutAndSave()}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '8px 16px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
             onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
             onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}

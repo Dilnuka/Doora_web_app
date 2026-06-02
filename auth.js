@@ -6,6 +6,28 @@ import { authConfig } from "./auth.config"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role
+        token.id = user.id
+        token.roomId = user.roomId
+        token.roomCode = user.roomCode
+      } else if (token.id && !token.roomId) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { roomId: true, role: true, room: { select: { code: true } } },
+        })
+        if (dbUser) {
+          token.roomId = dbUser.roomId
+          token.role = dbUser.role
+          token.roomCode = dbUser.room?.code ?? null
+        }
+      }
+      return token
+    },
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",

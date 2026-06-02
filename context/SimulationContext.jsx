@@ -2,13 +2,14 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from "react";
 import mqtt from "mqtt";
-import { useSession } from "next-auth/react";
-import { DEFAULT_ROOM_STATE } from "@/lib/roomState";
+import { signOut as nextAuthSignOut, useSession } from "next-auth/react";
+import { DEFAULT_ROOM_STATE, mergeRoomState } from "@/lib/roomState";
+import { loadRoomSnapshot, persistRoomSnapshot } from "@/lib/clientRoomState";
 
 const SimulationContext = createContext();
 
 export const SimulationProvider = ({ children }) => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const roomId = session?.user?.roomId || null;
 
   const [roomState, setRoomState] = useState(DEFAULT_ROOM_STATE);
@@ -17,35 +18,78 @@ export const SimulationProvider = ({ children }) => {
   const [isHydrated, setIsHydrated] = useState(false);
 
   const mqttClientRef = useRef(null);
+  const snapshotRef = useRef({ roomState: DEFAULT_ROOM_STATE, serviceQueue: [], logs: [] });
+  const persistReadyRef = useRef(false);
+  const saveTimerRef = useRef(null);
+  const acceptMqttRef = useRef(false);
+
   const clientId = useMemo(() => Math.random().toString(36).substring(7), []);
   const TOPIC_SYNC = useMemo(() => {
     return roomId ? `doora/demo/rooms/${roomId}/sync` : null;
   }, [roomId]);
 
-  // Restore last saved state from DB when the user logs in (survives logout).
   useEffect(() => {
-    if (!roomId) {
+    snapshotRef.current = { roomState, serviceQueue, logs };
+  }, [roomState, serviceQueue, logs]);
+
+  const flushPersist = useCallback(async () => {
+    if (!roomId || !persistReadyRef.current) return;
+    await persistRoomSnapshot(snapshotRef.current);
+  }, [roomId]);
+
+  const queuePersist = useCallback(
+    (immediate = false) => {
+      if (!roomId || !persistReadyRef.current) return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (immediate) {
+        void flushPersist().catch((e) => console.error("Failed to persist room state", e));
+        return;
+      }
+      saveTimerRef.current = setTimeout(() => {
+        void flushPersist().catch((e) => console.error("Failed to persist room state", e));
+      }, 400);
+    },
+    [roomId, flushPersist]
+  );
+
+  const signOutAndSave = useCallback(async () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    try {
+      await flushPersist();
+    } catch (e) {
+      console.error("Failed to save before logout", e);
+    }
+    await nextAuthSignOut({ callbackUrl: "/login" });
+  }, [flushPersist]);
+
+  // Restore saved state after login (wait until session is authenticated).
+  useEffect(() => {
+    if (status !== "authenticated" || !roomId) {
+      persistReadyRef.current = false;
+      acceptMqttRef.current = false;
       setIsHydrated(false);
-      setRoomState(DEFAULT_ROOM_STATE);
-      setServiceQueue([]);
-      setLogs([]);
       return;
     }
 
     let cancelled = false;
+    persistReadyRef.current = false;
+    acceptMqttRef.current = false;
     setIsHydrated(false);
 
     (async () => {
       try {
-        const res = await fetch("/api/room/state");
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
+        const data = await loadRoomSnapshot();
         if (cancelled) return;
         if (data.roomState) setRoomState(data.roomState);
         if (Array.isArray(data.serviceQueue)) setServiceQueue(data.serviceQueue);
         if (Array.isArray(data.logs)) setLogs(data.logs);
+        persistReadyRef.current = true;
+        setTimeout(() => {
+          acceptMqttRef.current = true;
+        }, 1500);
       } catch (e) {
         console.error("Failed to load persisted room state", e);
+        persistReadyRef.current = false;
       } finally {
         if (!cancelled) setIsHydrated(true);
       }
@@ -54,22 +98,21 @@ export const SimulationProvider = ({ children }) => {
     return () => {
       cancelled = true;
     };
-  }, [roomId]);
+  }, [roomId, status]);
 
-  // Persist state to DB (debounced) so logout/login keeps controller changes.
   useEffect(() => {
-    if (!roomId || !isHydrated) return;
+    if (!roomId || !isHydrated || !persistReadyRef.current) return;
+    queuePersist(false);
+  }, [roomId, isHydrated, roomState, serviceQueue, logs, queuePersist]);
 
-    const timer = setTimeout(() => {
-      fetch("/api/room/state", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomState, serviceQueue, logs }),
-      }).catch((e) => console.error("Failed to persist room state", e));
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [roomId, isHydrated, roomState, serviceQueue, logs]);
+  useEffect(() => {
+    const onPageHide = () => {
+      if (!roomId || !persistReadyRef.current) return;
+      void persistRoomSnapshot(snapshotRef.current).catch(() => {});
+    };
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
+  }, [roomId]);
 
   const addLog = useCallback(
     (message, source = "system") => {
@@ -91,7 +134,7 @@ export const SimulationProvider = ({ children }) => {
   );
 
   useEffect(() => {
-    if (!TOPIC_SYNC) return;
+    if (!TOPIC_SYNC || !isHydrated) return;
 
     const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
     mqttClientRef.current = client;
@@ -109,7 +152,8 @@ export const SimulationProvider = ({ children }) => {
           if (data.clientId === clientId) return;
 
           if (data.type === "SYNC_STATE" && data.payload) {
-            setRoomState((prev) => ({ ...prev, ...data.payload }));
+            if (!acceptMqttRef.current) return;
+            setRoomState((prev) => mergeRoomState({ ...prev, ...data.payload }));
           } else if (data.type === "ADD_LOG" && data.payload) {
             setLogs((prev) => [data.payload, ...prev].slice(0, 50));
           } else if (data.type === "ADD_SERVICE" && data.payload) {
@@ -154,7 +198,7 @@ export const SimulationProvider = ({ children }) => {
       clearInterval(tempInterval);
       if (client) client.end();
     };
-  }, [clientId, TOPIC_SYNC, addLog]);
+  }, [clientId, TOPIC_SYNC, addLog, isHydrated]);
 
   useEffect(() => {
     const alarmInterval = setInterval(() => {
@@ -178,18 +222,27 @@ export const SimulationProvider = ({ children }) => {
     return () => clearInterval(alarmInterval);
   }, [clientId, TOPIC_SYNC]);
 
-  const publishState = (newState) => {
-    if (mqttClientRef.current && mqttClientRef.current.connected && TOPIC_SYNC) {
-      mqttClientRef.current.publish(
-        TOPIC_SYNC,
-        JSON.stringify({
-          clientId,
-          type: "SYNC_STATE",
-          payload: newState,
-        })
-      );
-    }
-  };
+  const publishState = useCallback(
+    (newState) => {
+      snapshotRef.current = {
+        ...snapshotRef.current,
+        roomState: newState,
+      };
+      queuePersist(true);
+
+      if (mqttClientRef.current && mqttClientRef.current.connected && TOPIC_SYNC) {
+        mqttClientRef.current.publish(
+          TOPIC_SYNC,
+          JSON.stringify({
+            clientId,
+            type: "SYNC_STATE",
+            payload: newState,
+          })
+        );
+      }
+    },
+    [clientId, TOPIC_SYNC, queuePersist]
+  );
 
   const addServiceRequest = useCallback(
     (type, text) => {
@@ -390,6 +443,7 @@ export const SimulationProvider = ({ children }) => {
         addServiceRequest,
         logs,
         addLog,
+        signOutAndSave,
       }}
     >
       {children}
