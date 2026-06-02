@@ -9,6 +9,8 @@ export const authConfig = {
       if (user) {
         token.role = user.role
         token.id = user.id
+        token.roomId = user.roomId
+        token.roomCode = user.roomCode
       }
       return token
     },
@@ -16,6 +18,8 @@ export const authConfig = {
       if (session.user) {
         session.user.role = token.role
         session.user.id = token.id
+        session.user.roomId = token.roomId
+        session.user.roomCode = token.roomCode
       }
       return session
     }

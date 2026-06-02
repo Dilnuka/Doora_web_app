@@ -17,8 +17,17 @@ model User {
   image         String?
   password      String?
   role          Role      @default(GUEST)
+  roomId        String?   @unique
+  room          Room?     @relation(fields: [roomId], references: [id])
   accounts      Account[]
   sessions      Session[]
+}
+
+model Room {
+  id    String @id @default(cuid())
+  code  String @unique
+  name  String
+  user  User?
 }
 
 model Account {

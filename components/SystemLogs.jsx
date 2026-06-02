@@ -2,12 +2,15 @@
 import React, { useState } from "react";
 import { useSimulation } from "@/context/SimulationContext";
 import { Bell, Terminal, Clock, ChevronDown, ChevronUp, User, LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function SystemLogs() {
   const { serviceQueue, logs } = useSimulation();
   const [isOpen, setIsOpen] = useState(true);
+  const { data: session } = useSession();
+  const displayName = session?.user?.name || session?.user?.email || "Guest";
+  const roomLabel = session?.user?.roomCode || "Private Suite";
 
   return (
     <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 50, width: '380px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -28,8 +31,8 @@ export default function SystemLogs() {
             <User size={16} color="white" />
           </div>
           <div>
-            <p style={{ margin: 0, color: 'white', fontSize: '13px', fontWeight: '600', lineHeight: 1.2, whiteSpace: 'nowrap' }}>John Doe</p>
-            <p style={{ margin: 0, color: '#3b82f6', fontSize: '10px', letterSpacing: '1px', whiteSpace: 'nowrap' }}>Suite 204</p>
+            <p style={{ margin: 0, color: 'white', fontSize: '13px', fontWeight: '600', lineHeight: 1.2, whiteSpace: 'nowrap' }}>{displayName}</p>
+            <p style={{ margin: 0, color: '#3b82f6', fontSize: '10px', letterSpacing: '1px', whiteSpace: 'nowrap' }}>{roomLabel}</p>
           </div>
         </div>
 

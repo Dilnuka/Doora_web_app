@@ -2,10 +2,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSimulation } from "@/context/SimulationContext";
 import { Send, Lightbulb, Thermometer, User, Tv, Blinds, Lock, Unlock, Wind, Mic, MicOff, Cloud, Sun, CloudRain, Power, Plus, Minus, MapPin, ShieldAlert, AlarmClock, BellRing, LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 export default function GuestApp() {
   const { roomState, setLight, setAc, setTv, setCurtains, setDoor, setWindow, setCoffee, setSmoke, addLog, setAlarm, dismissAlarm } = useSimulation();
+  const { data: session } = useSession();
+  const displayName = session?.user?.name || session?.user?.email || "Guest";
+  const roomLabel = session?.user?.roomCode || "Private Suite";
   
   const [messages, setMessages] = useState([{ role: "ai", content: "Welcome to Doora. How can I assist you today?" }]);
   const [input, setInput] = useState("");
@@ -184,8 +187,8 @@ export default function GuestApp() {
             </div>
             <div>
               <p style={{ color: '#94a3b8', margin: 0, fontSize: '18px' }}>Welcome back,</p>
-              <h2 style={{ color: 'white', margin: '4px 0 0 0', fontSize: '36px', fontWeight: 'bold' }}>John Doe</h2>
-              <p style={{ color: '#3b82f6', margin: '4px 0 0 0', fontSize: '14px', fontWeight: '500' }}>Suite 204 • Connected</p>
+              <h2 style={{ color: 'white', margin: '4px 0 0 0', fontSize: '36px', fontWeight: 'bold' }}>{displayName}</h2>
+              <p style={{ color: '#3b82f6', margin: '4px 0 0 0', fontSize: '14px', fontWeight: '500' }}>{roomLabel} • Connected</p>
             </div>
             {/* Logout button */}
             <button

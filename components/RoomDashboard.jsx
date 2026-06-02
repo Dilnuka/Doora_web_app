@@ -2,11 +2,13 @@
 import React from "react";
 import { useSimulation } from "@/context/SimulationContext";
 import { Terminal, Lock, Unlock, Tv, Blinds, Lightbulb, Thermometer, UserCheck, Coffee, ShieldAlert, Wind, AlarmClock, User, LogOut } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function RoomDashboard() {
    const { roomState } = useSimulation();
+   const { data: session } = useSession();
+   const roomLabel = session?.user?.roomCode || "Private Suite";
 
    const isAnyLightOn = roomState.lights.master || roomState.lights.bath || roomState.lights.bed || roomState.lights.living || roomState.lights.kitchen;
 
@@ -40,7 +42,7 @@ export default function RoomDashboard() {
             <h2 style={{ fontSize: '24px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '12px', color: 'white', textShadow: '0 4px 15px rgba(0,0,0,1)', margin: 0 }}>
                <Terminal size={28} color="var(--accent-purple)" /> DOORA Command Center
             </h2>
-            <p style={{ margin: '8px 0 0 40px', color: 'var(--text-secondary)', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase' }}>Suite 204 Blueprint</p>
+            <p style={{ margin: '8px 0 0 40px', color: 'var(--text-secondary)', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase' }}>{roomLabel} Blueprint</p>
          </div>
 
          {/* Top-Down Room Visualization */}

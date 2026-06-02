@@ -97,6 +97,10 @@ export default function LoginPage() {
             {loading ? 'Authenticating...' : 'Login'}
           </button>
         </form>
+
+        <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#94a3b8' }}>
+          New here? <a href="/signup" style={{ color: '#60a5fa', textDecoration: 'none' }}>Create an account</a>
+        </div>
       </div>
     </main>
   );

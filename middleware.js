@@ -7,7 +7,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth
   const { nextUrl } = req
 
-  const isAuthRoute = nextUrl.pathname.startsWith("/login")
+  const isAuthRoute = nextUrl.pathname.startsWith("/login") || nextUrl.pathname.startsWith("/signup")
 
   if (isAuthRoute) {
     if (isLoggedIn) {
