@@ -1,12 +1,33 @@
 "use client";
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
+import { LogOut } from 'lucide-react';
 
 export default function Home() {
+  const { data: session } = useSession();
+
   return (
-    <main style={{ width: '100vw', height: '100vh', background: '#0a0b10', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', fontFamily: 'system-ui, sans-serif' }}>
+    <main style={{ width: '100vw', height: '100vh', background: '#0a0b10', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
       
+      {session && (
+        <div style={{ position: 'absolute', top: '24px', right: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{session.user.name || session.user.email}</span>
+            <span style={{ fontSize: '12px', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.2)', padding: '2px 8px', borderRadius: '12px', marginTop: '4px' }}>{session.user.role}</span>
+          </div>
+          <button 
+            onClick={() => signOut()}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '8px 16px', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+          >
+            <LogOut size={16} /> Logout
+          </button>
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '48px', fontWeight: 'bold', margin: '0 0 10px 0', background: 'linear-gradient(to right, #d4af37, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <h1 style={{ fontSize: '48px', fontWeight: 'bold', margin: '0 0 10px 0', color: '#ffffff' }}>
           DOORA Enterprise Demo
         </h1>
         <p style={{ color: '#94a3b8', fontSize: '18px', maxWidth: '600px', margin: '0 auto' }}>

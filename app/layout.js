@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { SimulationProvider } from "@/context/SimulationContext";
+import { Providers } from "@/components/Providers";
+import SplashScreen from "@/components/SplashScreen";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,9 +18,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable}`}>
       <body>
-        <SimulationProvider>
-          {children}
-        </SimulationProvider>
+        <SplashScreen />
+        <Providers>
+          <SimulationProvider>
+            {children}
+          </SimulationProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useSimulation } from "@/context/SimulationContext";
-import { Bell, Terminal, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Bell, Terminal, Clock, ChevronDown, ChevronUp, User, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function SystemLogs() {
@@ -11,16 +12,54 @@ export default function SystemLogs() {
   return (
     <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 50, width: '380px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       
-      {/* Toggle Button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button 
+      {/* Top bar: user info + logout + SYSTEM LOGS toggle — all in one row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'flex-end' }}>
+
+        {/* User pill */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          background: 'rgba(26,29,41,0.85)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '40px',
+          padding: '6px 16px 6px 6px',
+          backdropFilter: 'blur(12px)',
+        }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#1e293b', border: '2px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <User size={16} color="white" />
+          </div>
+          <div>
+            <p style={{ margin: 0, color: 'white', fontSize: '13px', fontWeight: '600', lineHeight: 1.2, whiteSpace: 'nowrap' }}>John Doe</p>
+            <p style={{ margin: 0, color: '#3b82f6', fontSize: '10px', letterSpacing: '1px', whiteSpace: 'nowrap' }}>Suite 204</p>
+          </div>
+        </div>
+
+        {/* Logout button */}
+        <button
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          title="Sign out"
+          style={{
+            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+            background: 'rgba(26,29,41,0.85)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', transition: 'all 0.2s', backdropFilter: 'blur(12px)',
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(26,29,41,0.85)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+        >
+          <LogOut size={16} color="#94a3b8" />
+        </button>
+
+        {/* SYSTEM LOGS toggle */}
+        <button
           onClick={() => setIsOpen(!isOpen)}
           className="glass-card flex-center"
-          style={{ padding: '8px 16px', gap: '8px', cursor: 'pointer', background: 'rgba(26,29,41,0.8)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+          style={{ padding: '8px 16px', gap: '8px', cursor: 'pointer', background: 'rgba(26,29,41,0.85)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', whiteSpace: 'nowrap' }}
         >
           <span style={{ fontSize: '12px', fontWeight: 'bold' }}>SYSTEM LOGS</span>
           {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
+
       </div>
 
       <AnimatePresence>

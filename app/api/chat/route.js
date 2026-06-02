@@ -12,7 +12,7 @@ const TOOLS = [
       parameters: {
         type: "object",
         properties: {
-          zone: { type: "string", enum: ["master", "bath", "bed", "living", "all"], description: "The room zone." },
+          zone: { type: "string", enum: ["master", "kitchen", "bath", "bed", "living", "all"], description: "The room zone." },
           state: { type: "boolean", description: "true to turn on, false to turn off." }
         },
         required: ["zone", "state"]
@@ -123,6 +123,29 @@ const TOOLS = [
         type: "object",
         properties: {}
       }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "set_alarm",
+      description: "Set the bedroom alarm clock to ring at a specific time. Use 24-hour HH:MM format.",
+      parameters: {
+        type: "object",
+        properties: {
+          time: { type: "string", description: "Alarm time in 24-hour HH:MM format, e.g. '07:00' or '08:30'." },
+          enabled: { type: "boolean", description: "true to enable the alarm, false to disable it." }
+        },
+        required: ["time", "enabled"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "dismiss_alarm",
+      description: "Dismiss or cancel the currently active or ringing alarm.",
+      parameters: { type: "object", properties: {} }
     }
   }
 ];
