@@ -175,7 +175,7 @@ export default function RoomDashboard() {
    const isAnyLightOn = roomState.lights.master || roomState.lights.bath || roomState.lights.bed || roomState.lights.living || roomState.lights.kitchen;
 
    return (
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      <div className="vis-dashboard" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
 
          {/* Fire Alarm Overlay Effect */}
          <AnimatePresence>
@@ -200,7 +200,7 @@ export default function RoomDashboard() {
          </AnimatePresence>
 
           {/* Header (Floating) */}
-          <div style={{ position: 'absolute', top: '32px', left: '32px', zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="vis-header" style={{ position: 'absolute', top: '32px', left: '32px', zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
              <Link href="/" style={{ textDecoration: 'none' }}>
                 <button
                    title="Back to selecting screen"
@@ -253,7 +253,7 @@ export default function RoomDashboard() {
             <div style={{ position: 'absolute', inset: 0, opacity: 0.15, backgroundImage: 'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
             {/* --- ROOM CONTAINER (Holds Walls, Furniture, and Devices) --- */}
-            <div style={{ position: 'absolute', top: '15%', bottom: '15%', left: '15%', right: '15%' }}>
+            <div className="vis-blueprint-container" style={{ position: 'absolute', top: '15%', bottom: '15%', left: '15%', right: '15%' }}>
 
                {/* Outer Walls */}
                <div style={{ position: 'absolute', inset: 0, border: '6px solid #333', borderRadius: '16px', pointerEvents: 'none', zIndex: 10 }} />
@@ -450,25 +450,25 @@ export default function RoomDashboard() {
 
                {/* Kitchen Light */}
                <div style={{ position: 'absolute', top: '20%', left: '15%', transform: 'translate(-50%, -50%)', pointerEvents: 'none', zIndex: 4 }}>
-                  <motion.div animate={{ scale: roomState.lights.kitchen || roomState.lights.master ? 1 : 0.2, opacity: roomState.lights.kitchen || roomState.lights.master ? 1 : 0 }} transition={{ duration: 0.5 }}
+                  <motion.div animate={{ scale: roomState.lights.kitchen ? 1 : 0.2, opacity: roomState.lights.kitchen ? 1 : 0 }} transition={{ duration: 0.5 }}
                      style={{ width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(212,175,55,0.25) 0%, transparent 60%)', borderRadius: '50%' }} />
                </div>
 
                {/* Bath Light */}
                <div style={{ position: 'absolute', top: '20%', right: '15%', transform: 'translate(50%, -50%)', pointerEvents: 'none', zIndex: 4 }}>
-                  <motion.div animate={{ scale: roomState.lights.bath || roomState.lights.master ? 1 : 0.2, opacity: roomState.lights.bath || roomState.lights.master ? 1 : 0 }} transition={{ duration: 0.5 }}
+                  <motion.div animate={{ scale: roomState.lights.bath ? 1 : 0.2, opacity: roomState.lights.bath ? 1 : 0 }} transition={{ duration: 0.5 }}
                      style={{ width: '350px', height: '350px', background: 'radial-gradient(circle, rgba(212,175,55,0.3) 0%, transparent 60%)', borderRadius: '50%' }} />
                </div>
 
                {/* Bed Light */}
                <div style={{ position: 'absolute', bottom: '25%', right: '15%', transform: 'translate(50%, 50%)', pointerEvents: 'none', zIndex: 4 }}>
-                  <motion.div animate={{ scale: roomState.lights.bed || roomState.lights.master ? 1 : 0.2, opacity: roomState.lights.bed || roomState.lights.master ? 1 : 0 }} transition={{ duration: 0.5 }}
+                  <motion.div animate={{ scale: roomState.lights.bed ? 1 : 0.2, opacity: roomState.lights.bed ? 1 : 0 }} transition={{ duration: 0.5 }}
                      style={{ width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(212,175,55,0.25) 0%, transparent 60%)', borderRadius: '50%' }} />
                </div>
 
                {/* Living Light */}
                <div style={{ position: 'absolute', bottom: '30%', left: '45%', transform: 'translate(-50%, 50%)', pointerEvents: 'none', zIndex: 4 }}>
-                  <motion.div animate={{ scale: roomState.lights.living || roomState.lights.master ? 1 : 0.2, opacity: roomState.lights.living || roomState.lights.master ? 1 : 0 }} transition={{ duration: 0.5 }}
+                  <motion.div animate={{ scale: roomState.lights.living ? 1 : 0.2, opacity: roomState.lights.living ? 1 : 0 }} transition={{ duration: 0.5 }}
                      style={{ width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 60%)', borderRadius: '50%' }} />
                </div>
 

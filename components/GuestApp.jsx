@@ -336,15 +336,15 @@ export default function GuestApp() {
   );
 
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#0a0b10', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+    <div className="guest-main" style={{ width: '100vw', height: '100vh', background: '#0a0b10', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
       
       {/* Desktop Content Area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '40px 60px', paddingBottom: '160px' }}>
+      <div className="guest-content" style={{ flex: 1, overflowY: 'auto', padding: '40px 60px', paddingBottom: '160px' }}>
         
         {/* Top Header & Weather Row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
+        <div className="guest-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <div className="guest-header-user" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <Link href="/" style={{ textDecoration: 'none' }}>
               <button
                 title="Back to selecting screen"
@@ -389,7 +389,7 @@ export default function GuestApp() {
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div className="guest-header-cards" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             {/* Time of Day Card */}
             <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '32px', padding: '24px 40px', display: 'flex', gap: '32px', alignItems: 'center' }}>
               <div>
@@ -449,10 +449,10 @@ export default function GuestApp() {
         </div>
 
         {/* Main 2-Column Dashboard Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '40px' }}>
+        <div className="guest-grid" style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '40px' }}>
           
           {/* Left Column: AC Controller */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '40px', padding: '40px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="guest-ac-col" style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '40px', padding: '40px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
               <div>
                 <h3 style={{ color: 'white', margin: 0, fontSize: '24px' }}>Air Conditioner</h3>
@@ -510,7 +510,7 @@ export default function GuestApp() {
             {/* Kitchen Devices */}
             {activeRoom === 'Kitchen' && (
               <>
-                <DeviceCard title="Kitchen Lights" icon={<Lightbulb />} active={roomState.lights.kitchen || roomState.lights.master} onClick={() => setLight('kitchen', !roomState.lights.kitchen)} activeColor="#eab308" />
+                <DeviceCard title="Kitchen Lights" icon={<Lightbulb />} active={roomState.lights.kitchen} onClick={() => setLight('kitchen', !roomState.lights.kitchen)} activeColor="#eab308" />
                 <DeviceCard title="Coffee Maker" icon={<Power />} active={roomState.coffeeMaker} onClick={() => setCoffee(!roomState.coffeeMaker)} activeColor="#8b5cf6" />
                 <DeviceCard title="Smoke Alarm" icon={<ShieldAlert />} active={roomState.smokeDetected} onClick={() => setSmoke(!roomState.smokeDetected)} activeColor="#ef4444" />
               </>
@@ -520,7 +520,7 @@ export default function GuestApp() {
             {activeRoom === 'Living Area' && (
               <>
                 <DeviceCard title="OLED TV" icon={<Tv />} active={roomState.tv} onClick={() => setTv(!roomState.tv)} activeColor="#3b82f6" />
-                <DeviceCard title="Living Lights" icon={<Lightbulb />} active={roomState.lights.living || roomState.lights.master} onClick={() => setLight('living', !roomState.lights.living)} activeColor="#eab308" />
+                <DeviceCard title="Living Lights" icon={<Lightbulb />} active={roomState.lights.living} onClick={() => setLight('living', !roomState.lights.living)} activeColor="#eab308" />
                 <DeviceCard title="Smart Window" icon={<Wind />} active={roomState.windowOpen?.living} onClick={() => setWindow('living', !roomState.windowOpen?.living)} activeColor="#0ea5e9" />
                 <DeviceCard title="Living Curtains" icon={<Blinds />} active={roomState.curtains?.living} onClick={() => setCurtains('living', !roomState.curtains?.living)} activeColor="#10b981" />
               </>
@@ -529,7 +529,7 @@ export default function GuestApp() {
             {/* Bedroom Devices */}
             {activeRoom === 'Bedroom' && (
               <>
-                <DeviceCard title="Bed Lights" icon={<Lightbulb />} active={roomState.lights.bed || roomState.lights.master} onClick={() => setLight('bed', !roomState.lights.bed)} activeColor="#eab308" />
+                <DeviceCard title="Bed Lights" icon={<Lightbulb />} active={roomState.lights.bed} onClick={() => setLight('bed', !roomState.lights.bed)} activeColor="#eab308" />
                 <DeviceCard title="Bedroom Window" icon={<Wind />} active={roomState.windowOpen?.bed} onClick={() => setWindow('bed', !roomState.windowOpen?.bed)} activeColor="#0ea5e9" />
                 <DeviceCard title="Bedroom Curtains" icon={<Blinds />} active={roomState.curtains?.bed} onClick={() => setCurtains('bed', !roomState.curtains?.bed)} activeColor="#10b981" />
 
@@ -615,7 +615,7 @@ export default function GuestApp() {
             {/* Bathroom Devices */}
             {activeRoom === 'Bathroom' && (
               <>
-                <DeviceCard title="Bath Lights" icon={<Lightbulb />} active={roomState.lights.bath || roomState.lights.master} onClick={() => setLight('bath', !roomState.lights.bath)} activeColor="#eab308" />
+                <DeviceCard title="Bath Lights" icon={<Lightbulb />} active={roomState.lights.bath} onClick={() => setLight('bath', !roomState.lights.bath)} activeColor="#eab308" />
               </>
             )}
 
@@ -625,7 +625,7 @@ export default function GuestApp() {
       </div>
 
       {/* Floating Centered AI Chat Bar */}
-      <div style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className="guest-chat-bar" style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         
         {/* Recent Chat Bubble */}
         <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>

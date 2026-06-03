@@ -13,7 +13,7 @@ export default function SystemLogs() {
   const roomLabel = session?.user?.roomCode || "Private Suite";
 
   return (
-    <div style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 50, width: '380px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="vis-logs-container" style={{ position: 'fixed', top: '24px', right: '24px', zIndex: 50, width: '380px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       
       {/* Top bar: user info + logout + SYSTEM LOGS toggle — all in one row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'flex-end' }}>

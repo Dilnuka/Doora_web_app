@@ -53,7 +53,7 @@ export default function Home() {
   };
 
   return (
-    <main style={{
+    <main className="landing-main" style={{
       position: 'relative',
       width: '100vw',
       height: '100vh',
@@ -71,7 +71,7 @@ export default function Home() {
       <ParticleNetwork />
 
       {/* Foreground Content */}
-      <div style={{
+      <div className="landing-content" style={{
         position: 'relative',
         zIndex: 1,
         width: '100%',
@@ -137,6 +137,7 @@ export default function Home() {
 
         {/* Node Selection Grid */}
         <motion.div 
+          className="landing-grid"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -151,7 +152,7 @@ export default function Home() {
         >
           
           {/* Controller App Card */}
-          <motion.div variants={itemVariants} style={{ flex: '1 1 300px', maxWidth: '360px' }}>
+          <motion.div className="landing-card" variants={itemVariants} style={{ flex: '1 1 300px', maxWidth: '360px' }}>
             <Link href="/controller" style={{ textDecoration: 'none', height: '100%', display: 'block' }}>
               <motion.div 
                 variants={cardA}
@@ -267,7 +268,7 @@ export default function Home() {
           </motion.div>
 
           {/* Visualization App Card */}
-          <motion.div variants={itemVariants} style={{ flex: '1 1 300px', maxWidth: '360px' }}>
+          <motion.div className="landing-card" variants={itemVariants} style={{ flex: '1 1 300px', maxWidth: '360px' }}>
             <Link href="/visualization" style={{ textDecoration: 'none', height: '100%', display: 'block' }}>
               <motion.div 
                 variants={cardB}
@@ -354,7 +355,67 @@ export default function Home() {
         </motion.div>
 
       </div>
+
+      {/* Branding Footer */}
+      <motion.div
+        className="branding-footer"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8, duration: 0.6 }}
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          right: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          zIndex: 10,
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          padding: '8px 18px',
+          borderRadius: '20px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
+          pointerEvents: 'auto'
+        }}
+      >
+        <span style={{
+          fontSize: '11px',
+          fontWeight: '500',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          color: '#64748b'
+        }}>
+          Developed By
+        </span>
+        <a 
+          href="https://vsis.lk" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            textDecoration: 'none'
+          }}
+        >
+          <motion.img
+            src="/Vector-scaled-Photoroom.png"
+            alt="VSIS Logo"
+            style={{
+              height: '18px',
+              width: 'auto',
+              display: 'block'
+            }}
+            whileHover={{ 
+              scale: 1.05,
+              filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.2)) brightness(1.1)'
+            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+          />
+        </a>
+      </motion.div>
     </main>
+
   );
 }
 

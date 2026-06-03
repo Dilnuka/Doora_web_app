@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Lock, User, Mail } from "lucide-react";
 import ParticleNetwork from "@/components/ParticleNetwork";
+import { motion } from "framer-motion";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -54,10 +55,10 @@ export default function SignupPage() {
   };
 
   return (
-    <main style={{ position: "relative", width: "100vw", height: "100vh", overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontFamily: "system-ui, sans-serif" }}>
+    <main className="auth-main" style={{ position: "relative", width: "100vw", height: "100vh", overflow: "hidden", display: "flex", justifyContent: "center", alignItems: "center", color: "white", fontFamily: "system-ui, sans-serif" }}>
       <ParticleNetwork />
 
-      <div style={{ position: "relative", zIndex: 10, width: "420px", padding: "40px", background: "rgba(255,255,255,0.02)", borderRadius: "24px", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
+      <div className="auth-card" style={{ position: "relative", zIndex: 10, width: "420px", padding: "40px", background: "rgba(255,255,255,0.02)", borderRadius: "24px", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <h1 style={{ fontSize: "32px", fontWeight: "bold", margin: "0 0 8px 0", color: "#ffffff" }}>
             Create Your Doora Account
@@ -132,6 +133,65 @@ export default function SignupPage() {
           <Link href="/login" style={{ color: "#60a5fa", textDecoration: "none" }}>Log in</Link>
         </div>
       </div>
+
+      {/* Branding Footer */}
+      <motion.div
+        className="branding-footer"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8, duration: 0.6 }}
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          right: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          zIndex: 10,
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          padding: '8px 18px',
+          borderRadius: '20px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
+          pointerEvents: 'auto'
+        }}
+      >
+        <span style={{
+          fontSize: '11px',
+          fontWeight: '500',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          color: '#64748b'
+        }}>
+          Developed By
+        </span>
+        <a 
+          href="https://vsis.lk" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            textDecoration: 'none'
+          }}
+        >
+          <motion.img
+            src="/Vector-scaled-Photoroom.png"
+            alt="VSIS Logo"
+            style={{
+              height: '18px',
+              width: 'auto',
+              display: 'block'
+            }}
+            whileHover={{ 
+              scale: 1.05,
+              filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.2)) brightness(1.1)'
+            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+          />
+        </a>
+      </motion.div>
     </main>
   );
 }

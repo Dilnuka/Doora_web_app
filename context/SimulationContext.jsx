@@ -276,6 +276,13 @@ export const SimulationProvider = ({ children }) => {
           newLights.living = state;
         } else if (newLights[zone] !== undefined) {
           newLights[zone] = state;
+          if (state === false) {
+            newLights.master = false;
+          } else {
+            if (newLights.kitchen && newLights.bath && newLights.bed && newLights.living) {
+              newLights.master = true;
+            }
+          }
         }
         const computedState = { ...prev, lights: newLights };
         publishState(computedState);

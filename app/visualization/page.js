@@ -4,7 +4,7 @@ import SystemLogs from "@/components/SystemLogs";
 
 export default function VisualizationPage() {
   return (
-    <main style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#0a0b10' }}>
+    <main className="vis-main" style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#0a0b10' }}>
       
       {/* Layer 1: Full-Screen Interactive Floor Plan */}
       <RoomDashboard />
