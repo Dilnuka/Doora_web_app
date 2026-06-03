@@ -1,13 +1,175 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useSimulation } from "@/context/SimulationContext";
-import { Terminal, Lock, Unlock, Tv, Blinds, Lightbulb, Thermometer, UserCheck, Coffee, ShieldAlert, Wind, AlarmClock, User, LogOut } from "lucide-react";
+import { Terminal, Lock, Unlock, Tv, Blinds, Lightbulb, Thermometer, UserCheck, Coffee, ShieldAlert, Wind, AlarmClock, User, LogOut, ArrowLeft, Clock } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+
+// Time of Day Animation Component
+const TimeAnimation = ({ period, size = 32 }) => {
+  if (period === "morning") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 4px #eab308)' }}>
+        <line x1="2" y1="18" x2="22" y2="18" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+        <motion.path
+          d="M6 18c0-3.3 2.7-6 6-6s6 2.7 6 6"
+          stroke="#f59e0b"
+          strokeWidth="2"
+          strokeLinecap="round"
+          initial={{ y: 4, opacity: 0.5 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+        />
+        <motion.path
+          d="M12 4v3M7 7l2 2M17 7l-2 2"
+          stroke="#fbbf24"
+          strokeWidth="2"
+          strokeLinecap="round"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </svg>
+    );
+  }
+  
+  if (period === "afternoon") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 6px #eab308)' }}>
+        <motion.circle
+          cx="12"
+          cy="12"
+          r="5"
+          fill="#f59e0b"
+          stroke="#fbbf24"
+          strokeWidth="2"
+          animate={{ scale: [0.95, 1.05, 0.95] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.g
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          style={{ originX: "12px", originY: "12px" }}
+        >
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5l1.5 1.5M5 19l1.5-1.5M17.5 6.5l1.5-1.5" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />
+        </motion.g>
+      </svg>
+    );
+  }
+  
+  if (period === "evening") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 4px #f97316)' }}>
+        <line x1="2" y1="18" x2="22" y2="18" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+        <motion.path
+          d="M7 18c0-2.8 2.2-5 5-5s5 2.2 5 5"
+          stroke="#ea580c"
+          strokeWidth="2"
+          strokeLinecap="round"
+          initial={{ y: -2 }}
+          animate={{ y: 2 }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+        />
+        <motion.path
+          d="M12 6v2M8 9l1.5 1.5M16 9l-1.5 1.5"
+          stroke="#f97316"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          animate={{ opacity: [0.2, 0.8, 0.2] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </svg>
+    );
+  }
+  
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 6px #60a5fa)' }}>
+      <motion.path
+        d="M12 3a9 9 0 1 0 9 9 9.75 9.75 0 0 1-9-9Z"
+        fill="#3b82f6"
+        stroke="#60a5fa"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        animate={{ rotate: [-2, 2, -2] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.path
+        d="M19 5l.5 1.5L21 7l-1.5.5L19 9l-.5-1.5L17 7l1.5-.5L19 5Z"
+        fill="#ffffff"
+        animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        style={{ originX: "19px", originY: "7px" }}
+      />
+    </svg>
+  );
+};
+
+// Time tracking hook
+const useTimeOfDay = () => {
+  const [timeState, setTimeState] = useState({
+    timeStr: "",
+    dateStr: "",
+    fullDateStr: "",
+    period: "afternoon",
+    label: "Day",
+    color: "#3b82f6"
+  });
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const displayHours = hours % 12 || 12;
+      const timeStr = `${displayHours}:${minutes} ${ampm}`;
+
+      const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const dateStr = `${daysShort[now.getDay()]}, ${monthsShort[now.getMonth()]} ${now.getDate()}`;
+
+      const daysFull = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const monthsFull = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const fullDateStr = `${daysFull[now.getDay()]}, ${monthsFull[now.getMonth()]} ${now.getDate()}`;
+
+      let period = "afternoon";
+      let label = "Day";
+      let color = "#38bdf8";
+
+      if (hours >= 6 && hours < 12) {
+        period = "morning";
+        label = "Morning";
+        color = "#eab308";
+      } else if (hours >= 12 && hours < 17) {
+        period = "afternoon";
+        label = "Day";
+        color = "#38bdf8";
+      } else if (hours >= 17 && hours < 20) {
+        period = "evening";
+        label = "Evening";
+        color = "#f97316";
+      } else {
+        period = "night";
+        label = "Night";
+        color = "#60a5fa";
+      }
+
+      setTimeState({ timeStr, dateStr, fullDateStr, period, label, color });
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return timeState;
+};
 
 export default function RoomDashboard() {
    const { roomState } = useSimulation();
    const { data: session } = useSession();
+   const { timeStr, dateStr, fullDateStr, period, label, color: periodColor } = useTimeOfDay();
    const roomLabel = session?.user?.roomCode || "Private Suite";
 
    const isAnyLightOn = roomState.lights.master || roomState.lights.bath || roomState.lights.bed || roomState.lights.living || roomState.lights.kitchen;
@@ -37,19 +199,52 @@ export default function RoomDashboard() {
             )}
          </AnimatePresence>
 
-         {/* Header (Floating) */}
-         <div style={{ position: 'absolute', top: '32px', left: '32px', zIndex: 10 }}>
-            <h2 style={{ fontSize: '24px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '12px', color: 'white', textShadow: '0 4px 15px rgba(0,0,0,1)', margin: 0 }}>
-               <Terminal size={28} color="var(--accent-purple)" /> DOORA Command Center
-            </h2>
-            <p style={{ margin: '8px 0 0 40px', color: 'var(--text-secondary)', fontSize: '14px', letterSpacing: '2px', textTransform: 'uppercase' }}>{roomLabel} Blueprint</p>
-         </div>
+          {/* Header (Floating) */}
+          <div style={{ position: 'absolute', top: '32px', left: '32px', zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
+             <Link href="/" style={{ textDecoration: 'none' }}>
+                <button
+                   title="Back to selecting screen"
+                   style={{
+                      width: '40px', height: '40px', borderRadius: '50%',
+                      background: 'rgba(20, 22, 28, 0.6)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      color: '#94a3b8',
+                      backdropFilter: 'blur(10px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                   }}
+                   onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                   onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(20, 22, 28, 0.6)'; e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                >
+                   <ArrowLeft size={18} />
+                </button>
+             </Link>
+             <div>
+                <h2 style={{ fontSize: '24px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '12px', color: 'white', textShadow: '0 4px 15px rgba(0,0,0,1)', margin: 0 }}>
+                   <Terminal size={28} color="var(--accent-purple)" /> DOORA Command Center
+                </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px', marginLeft: '40px' }}>
+                   <span style={{ color: 'var(--text-secondary)', fontSize: '13px', letterSpacing: '2px', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>{roomLabel} Blueprint</span>
+                   <span style={{ width: '4px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%' }} />
+                   
+                   {/* Time of Day Pill */}
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(20, 22, 28, 0.6)', border: '1px solid rgba(255,255,255,0.08)', padding: '4px 12px', borderRadius: '20px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+                      <TimeAnimation period={period} size={16} />
+                      <span style={{ fontSize: '12px', color: 'white', fontWeight: '600', fontFamily: 'monospace' }}>{dateStr} • {timeStr}</span>
+                   </div>
+                </div>
+             </div>
+          </div>
 
          {/* Top-Down Room Visualization */}
          <div style={{
             position: 'absolute',
             inset: 0,
-            background: isAnyLightOn ? '#1a1b24' : '#11121a',
+            background: period === 'morning' ? (isAnyLightOn ? '#1c1b22' : '#0e0e14') :
+                        period === 'evening' ? (isAnyLightOn ? '#1b1724' : '#120f18') :
+                        period === 'night' ? (isAnyLightOn ? '#131524' : '#0a0b12') :
+                        (isAnyLightOn ? '#1a1b24' : '#11121a'),
             transition: 'background 0.5s ease',
             zIndex: 2
          }}>

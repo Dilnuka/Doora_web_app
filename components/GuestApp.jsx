@@ -1,12 +1,175 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useSimulation } from "@/context/SimulationContext";
-import { Send, Lightbulb, Thermometer, User, Tv, Blinds, Lock, Unlock, Wind, Mic, MicOff, Cloud, Sun, CloudRain, Power, Plus, Minus, MapPin, ShieldAlert, AlarmClock, BellRing, LogOut } from "lucide-react";
+import { Send, Lightbulb, Thermometer, User, Tv, Blinds, Lock, Unlock, Wind, Mic, MicOff, Cloud, Sun, CloudRain, Power, Plus, Minus, MapPin, ShieldAlert, AlarmClock, BellRing, LogOut, ArrowLeft, Clock } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+
+// Time of Day Animation Component
+const TimeAnimation = ({ period }) => {
+  if (period === "morning") {
+    return (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 4px #eab308)' }}>
+        <line x1="2" y1="18" x2="22" y2="18" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+        <motion.path
+          d="M6 18c0-3.3 2.7-6 6-6s6 2.7 6 6"
+          stroke="#f59e0b"
+          strokeWidth="2"
+          strokeLinecap="round"
+          initial={{ y: 4, opacity: 0.5 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+        />
+        <motion.path
+          d="M12 4v3M7 7l2 2M17 7l-2 2"
+          stroke="#fbbf24"
+          strokeWidth="2"
+          strokeLinecap="round"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </svg>
+    );
+  }
+  
+  if (period === "afternoon") {
+    return (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 6px #eab308)' }}>
+        <motion.circle
+          cx="12"
+          cy="12"
+          r="5"
+          fill="#f59e0b"
+          stroke="#fbbf24"
+          strokeWidth="2"
+          animate={{ scale: [0.95, 1.05, 0.95] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.g
+          animate={{ rotate: 360 }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          style={{ originX: "12px", originY: "12px" }}
+        >
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5l1.5 1.5M5 19l1.5-1.5M17.5 6.5l1.5-1.5" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />
+        </motion.g>
+      </svg>
+    );
+  }
+  
+  if (period === "evening") {
+    return (
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 4px #f97316)' }}>
+        <line x1="2" y1="18" x2="22" y2="18" stroke="#475569" strokeWidth="2" strokeLinecap="round" />
+        <motion.path
+          d="M7 18c0-2.8 2.2-5 5-5s5 2.2 5 5"
+          stroke="#ea580c"
+          strokeWidth="2"
+          strokeLinecap="round"
+          initial={{ y: -2 }}
+          animate={{ y: 2 }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+        />
+        <motion.path
+          d="M12 6v2M8 9l1.5 1.5M16 9l-1.5 1.5"
+          stroke="#f97316"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          animate={{ opacity: [0.2, 0.8, 0.2] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </svg>
+    );
+  }
+  
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 6px #60a5fa)' }}>
+      <motion.path
+        d="M12 3a9 9 0 1 0 9 9 9.75 9.75 0 0 1-9-9Z"
+        fill="#3b82f6"
+        stroke="#60a5fa"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        animate={{ rotate: [-2, 2, -2] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.path
+        d="M19 5l.5 1.5L21 7l-1.5.5L19 9l-.5-1.5L17 7l1.5-.5L19 5Z"
+        fill="#ffffff"
+        animate={{ opacity: [0.2, 1, 0.2], scale: [0.8, 1.2, 0.8] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        style={{ originX: "19px", originY: "7px" }}
+      />
+    </svg>
+  );
+};
+
+// Time tracking hook
+const useTimeOfDay = () => {
+  const [timeState, setTimeState] = useState({
+    timeStr: "",
+    dateStr: "",
+    fullDateStr: "",
+    period: "afternoon",
+    label: "Day",
+    color: "#3b82f6"
+  });
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const displayHours = hours % 12 || 12;
+      const timeStr = `${displayHours}:${minutes} ${ampm}`;
+
+      const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const dateStr = `${daysShort[now.getDay()]}, ${monthsShort[now.getMonth()]} ${now.getDate()}`;
+
+      const daysFull = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const monthsFull = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const fullDateStr = `${daysFull[now.getDay()]}, ${monthsFull[now.getMonth()]} ${now.getDate()}`;
+
+      let period = "afternoon";
+      let label = "Day";
+      let color = "#38bdf8";
+
+      if (hours >= 6 && hours < 12) {
+        period = "morning";
+        label = "Morning";
+        color = "#eab308";
+      } else if (hours >= 12 && hours < 17) {
+        period = "afternoon";
+        label = "Day";
+        color = "#38bdf8";
+      } else if (hours >= 17 && hours < 20) {
+        period = "evening";
+        label = "Evening";
+        color = "#f97316";
+      } else {
+        period = "night";
+        label = "Night";
+        color = "#60a5fa";
+      }
+
+      setTimeState({ timeStr, dateStr, fullDateStr, period, label, color });
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return timeState;
+};
 
 export default function GuestApp() {
   const { roomState, setLight, setAc, setTv, setCurtains, setDoor, setWindow, setCoffee, setSmoke, addLog, setAlarm, dismissAlarm, signOutAndSave } = useSimulation();
   const { data: session } = useSession();
+  const { timeStr, dateStr, fullDateStr, period, label, color: periodColor } = useTimeOfDay();
   const displayName = session?.user?.name || session?.user?.email || "Guest";
   const roomLabel = session?.user?.roomCode || "Private Suite";
   
@@ -182,6 +345,23 @@ export default function GuestApp() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+            <Link href="/" style={{ textDecoration: 'none' }}>
+              <button
+                title="Back to selecting screen"
+                style={{
+                  width: '48px', height: '48px', borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  color: '#94a3b8'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                <ArrowLeft size={20} />
+              </button>
+            </Link>
             <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.1)' }}>
               <User size={40} color="white" />
             </div>
@@ -209,20 +389,41 @@ export default function GuestApp() {
             </button>
           </div>
 
-          <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '32px', padding: '24px 40px', display: 'flex', gap: '40px', alignItems: 'center' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', marginBottom: '8px' }}>
-                <MapPin size={16} color="#38bdf8" />
-                <p style={{ margin: 0, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>{weather.location}</p>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            {/* Time of Day Card */}
+            <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '32px', padding: '24px 40px', display: 'flex', gap: '32px', alignItems: 'center' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', marginBottom: '8px' }}>
+                  <Clock size={16} color={periodColor} />
+                  <p style={{ margin: 0, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>System Time</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <h1 style={{ color: 'white', margin: 0, fontSize: '42px', fontWeight: '300', lineHeight: 1 }}>{timeStr.split(' ')[0]}</h1>
+                  <span style={{ color: periodColor, fontSize: '18px', fontWeight: '500' }}>{timeStr.split(' ')[1]}</span>
+                </div>
+                <p style={{ margin: '8px 0 0 0', fontSize: '15px', color: '#94a3b8' }}>{fullDateStr} • <span style={{ color: 'white', fontWeight: '500' }}>{label} Mode</span></p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <h1 style={{ color: 'white', margin: 0, fontSize: '56px', fontWeight: '300', lineHeight: 1 }}>{weather.temp}°</h1>
-                <span style={{ color: '#38bdf8', fontSize: '20px', marginTop: '4px', fontWeight: '500' }}>C</span>
+              <div style={{ paddingLeft: '32px', borderLeft: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px' }}>
+                <TimeAnimation period={period} />
               </div>
-              <p style={{ color: 'white', margin: '8px 0 0 0', fontSize: '18px' }}>{weather.condition}</p>
             </div>
-            <div style={{ paddingLeft: '40px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-              {getWeatherIcon()}
+
+            {/* Weather Card */}
+            <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '32px', padding: '24px 40px', display: 'flex', gap: '40px', alignItems: 'center' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', marginBottom: '8px' }}>
+                  <MapPin size={16} color="#38bdf8" />
+                  <p style={{ margin: 0, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>{weather.location}</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <h1 style={{ color: 'white', margin: 0, fontSize: '56px', fontWeight: '300', lineHeight: 1 }}>{weather.temp}°</h1>
+                  <span style={{ color: '#38bdf8', fontSize: '20px', marginTop: '4px', fontWeight: '500' }}>C</span>
+                </div>
+                <p style={{ color: 'white', margin: '8px 0 0 0', fontSize: '18px' }}>{weather.condition}</p>
+              </div>
+              <div style={{ paddingLeft: '40px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
+                {getWeatherIcon()}
+              </div>
             </div>
           </div>
         </div>

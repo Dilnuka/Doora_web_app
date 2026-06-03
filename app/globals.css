@@ -67,8 +67,24 @@ body {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+.pulse-element {
+  animation: pulse 3s infinite ease-in-out;
+}
+
 .flex-center {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
