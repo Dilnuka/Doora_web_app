@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-function generateRoomCode() {
-  return `ROOM-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
-}
-
 export async function POST(req) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, email, password, selectedRoomId } = await req.json();
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: "Name, email, and password are required." }, { status: 400 });
+    if (!name || !email || !password || !selectedRoomId) {
+      return NextResponse.json({ error: "Name, email, password, and room selection are required." }, { status: 400 });
     }
 
     if (password.length < 6) {
@@ -26,34 +21,29 @@ export async function POST(req) {
       return NextResponse.json({ error: "Email is already in use." }, { status: 409 });
     }
 
-    let roomCode = generateRoomCode();
-    let attempts = 0;
-    while (attempts < 5) {
-      const existingRoom = await prisma.room.findUnique({ where: { code: roomCode } });
-      if (!existingRoom) break;
-      roomCode = generateRoomCode();
-      attempts += 1;
+    const existingRoom = await prisma.room.findUnique({ 
+      where: { id: selectedRoomId },
+      include: { user: true }
+    });
+
+    if (!existingRoom) {
+      return NextResponse.json({ error: "Selected room does not exist." }, { status: 404 });
+    }
+
+    if (existingRoom.user) {
+      return NextResponse.json({ error: "Selected room is already occupied." }, { status: 409 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await prisma.$transaction(async (tx) => {
-      const room = await tx.room.create({
-        data: {
-          code: roomCode,
-          name: `Suite ${roomCode}`,
-        },
-      });
-
-      await tx.user.create({
-        data: {
-          name,
-          email,
-          password: hashedPassword,
-          role: "GUEST",
-          roomId: room.id,
-        },
-      });
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: "GUEST",
+        roomId: selectedRoomId,
+      },
     });
 
     return NextResponse.json({ ok: true });

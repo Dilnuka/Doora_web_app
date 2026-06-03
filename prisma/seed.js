@@ -24,6 +24,18 @@ async function main() {
     })
   ]);
 
+  const hotelRooms = [];
+  for (let i = 1; i <= 10; i++) {
+    const roomCode = `ROOM-10${i < 10 ? i : '0'}`.replace('1010', '110'); // ROOM-101 to ROOM-110
+    const roomName = `Room 1${i.toString().padStart(2, '0')}`;
+    const room = await prisma.room.upsert({
+      where: { code: roomCode },
+      update: {},
+      create: { code: roomCode, name: roomName },
+    });
+    hotelRooms.push(room);
+  }
+
   const [admin, guest] = await prisma.$transaction([
     prisma.user.upsert({
       where: { email: 'admin@doora.local' },
@@ -49,7 +61,7 @@ async function main() {
     })
   ]);
 
-  console.log({ admin, guest, adminRoom, guestRoom });
+  console.log({ admin, guest, adminRoom, guestRoom, seededRooms: hotelRooms.length });
 }
 
 main()

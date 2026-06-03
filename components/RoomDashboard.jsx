@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSimulation } from "@/context/SimulationContext";
-import { Terminal, Lock, Unlock, Tv, Blinds, Lightbulb, Thermometer, UserCheck, Coffee, ShieldAlert, Wind, AlarmClock, User, LogOut, ArrowLeft, Clock } from "lucide-react";
+import { Terminal, Lock, Unlock, Tv, Blinds, Lightbulb, Thermometer, UserCheck, Coffee, ShieldAlert, Wind, AlarmClock, User, LogOut, ArrowLeft, Clock, Shield, Map, ChevronDown, ChevronUp, Activity } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Time of Day Animation Component
 const TimeAnimation = ({ period, size = 32 }) => {
@@ -167,12 +168,52 @@ const useTimeOfDay = () => {
 };
 
 export default function RoomDashboard() {
-   const { roomState } = useSimulation();
-   const { data: session } = useSession();
-   const { timeStr, dateStr, fullDateStr, period, label, color: periodColor } = useTimeOfDay();
-   const roomLabel = session?.user?.roomCode || "Private Suite";
+    const { roomState, setActiveRoomId } = useSimulation();
+    const { data: session } = useSession();
+    const router = useRouter();
+    const { timeStr, dateStr, fullDateStr, period, label, color: periodColor } = useTimeOfDay();
+    const searchParams = useSearchParams();
+    const urlRoomId = searchParams.get("roomId");
+    const urlRoomCode = searchParams.get("roomCode");
+    const roomLabel = urlRoomCode || session?.user?.roomCode || "Private Suite";
 
-   const isAnyLightOn = roomState.lights.master || roomState.lights.bath || roomState.lights.bed || roomState.lights.living || roomState.lights.kitchen;
+    useEffect(() => {
+      if (setActiveRoomId) {
+        setActiveRoomId(urlRoomId);
+      }
+      return () => {
+        if (setActiveRoomId) {
+          setActiveRoomId(null);
+        }
+      };
+    }, [urlRoomId, setActiveRoomId]);
+    const isAdmin = session?.user?.role === "ADMIN";
+    const [adminPanelOpen, setAdminPanelOpen] = useState(false);
+    const [roomGridOpen, setRoomGridOpen] = useState(false);
+    const [adminRooms, setAdminRooms] = useState([]);
+    const isAnyLightOn = !!(
+      roomState?.lights?.kitchen ||
+      roomState?.lights?.bath ||
+      roomState?.lights?.bed ||
+      roomState?.lights?.living ||
+      roomState?.lights?.master
+    );
+    // Load booked rooms for admin view
+    useEffect(() => {
+      if (isAdmin) {
+        const fetchRooms = async () => {
+          try {
+            const res = await fetch('/api/admin/rooms');
+            if (!res.ok) throw new Error('Failed to fetch admin rooms');
+            const data = await res.json();
+            setAdminRooms(data.rooms || []);
+          } catch (e) {
+            console.error('Error loading admin rooms', e);
+          }
+        };
+        fetchRooms();
+      }
+    }, [isAdmin]);
 
    return (
       <div className="vis-dashboard" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
@@ -225,17 +266,38 @@ export default function RoomDashboard() {
                    <Terminal size={28} color="var(--accent-purple)" /> DOORA Command Center
                 </h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px', marginLeft: '40px' }}>
-                   <span style={{ color: 'var(--text-secondary)', fontSize: '13px', letterSpacing: '2px', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>{roomLabel} Blueprint</span>
+                   <span suppressHydrationWarning style={{ color: 'var(--text-secondary)', fontSize: '13px', letterSpacing: '2px', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>{roomLabel} Blueprint</span>
                    <span style={{ width: '4px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%' }} />
                    
+                   {/* Admin Badge */}
+                   {isAdmin && (
+                      <motion.div
+                         initial={{ opacity: 0, scale: 0.8 }}
+                         animate={{ opacity: 1, scale: 1 }}
+                         style={{
+                            display: 'flex', alignItems: 'center', gap: '5px',
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            border: '1px solid rgba(239, 68, 68, 0.4)',
+                            padding: '3px 10px', borderRadius: '20px',
+                            backdropFilter: 'blur(8px)',
+                            boxShadow: '0 0 12px rgba(239,68,68,0.2)'
+                         }}
+                      >
+                         <Shield size={11} color="#ef4444" />
+                         <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Admin View</span>
+                      </motion.div>
+                   )}
+
                    {/* Time of Day Pill */}
                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(20, 22, 28, 0.6)', border: '1px solid rgba(255,255,255,0.08)', padding: '4px 12px', borderRadius: '20px', backdropFilter: 'blur(8px)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
                       <TimeAnimation period={period} size={16} />
-                      <span style={{ fontSize: '12px', color: 'white', fontWeight: '600', fontFamily: 'monospace' }}>{dateStr} • {timeStr}</span>
+                      <span suppressHydrationWarning style={{ fontSize: '12px', color: 'white', fontWeight: '600', fontFamily: 'monospace' }}>{dateStr} • {timeStr}</span>
                    </div>
                 </div>
              </div>
           </div>
+
+
 
          {/* Top-Down Room Visualization */}
          <div style={{
@@ -625,6 +687,263 @@ export default function RoomDashboard() {
 
             </div>
          </div>
+
+         {/* ============================================================
+             ADMIN OVERLAY PANEL (only visible when role === ADMIN)
+             ============================================================ */}
+         <AnimatePresence>
+            {isAdmin && (
+               <motion.div
+                  initial={{ opacity: 0, x: 60 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 60 }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                  style={{
+                     position: 'absolute',
+                     bottom: '28px',
+                     right: '28px',
+                     zIndex: 50,
+                     width: '260px',
+                  }}
+               >
+                  {/* Panel Header (always visible) */}
+                  <button
+                     onClick={() => setAdminPanelOpen(p => !p)}
+                     style={{
+                        width: '100%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        background: 'rgba(10, 12, 20, 0.85)',
+                        backdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(239, 68, 68, 0.35)',
+                        borderRadius: adminPanelOpen ? '14px 14px 0 0' : '14px',
+                        padding: '10px 14px',
+                        cursor: 'pointer',
+                        transition: 'border-radius 0.3s',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(239,68,68,0.1)'
+                     }}
+                  >
+                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px', background: 'rgba(239,68,68,0.2)', borderRadius: '6px', flexShrink: 0 }}>
+                           <Shield size={13} color="#ef4444" />
+                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: '700', color: '#f87171', letterSpacing: '1px', textTransform: 'uppercase' }}>Admin Room Monitor</span>
+                     </span>
+                     {adminPanelOpen ? <ChevronDown size={14} color="#64748b" /> : <ChevronUp size={14} color="#64748b" />}
+                  </button>
+
+                  {/* Expandable Panel Body */}
+                  <AnimatePresence>
+                     {adminPanelOpen && (
+                        <motion.div
+                           key="admin-panel-body"
+                           initial={{ height: 0, opacity: 0 }}
+                           animate={{ height: 'auto', opacity: 1 }}
+                           exit={{ height: 0, opacity: 0 }}
+                           transition={{ duration: 0.3, ease: 'easeInOut' }}
+                           style={{ overflow: 'hidden' }}
+                        >
+                           <div style={{
+                              background: 'rgba(10, 12, 20, 0.88)',
+                              backdropFilter: 'blur(16px)',
+                              border: '1px solid rgba(239, 68, 68, 0.2)',
+                              borderTop: 'none',
+                              borderRadius: '0 0 14px 14px',
+                              padding: '14px',
+                              display: 'flex', flexDirection: 'column', gap: '10px',
+                              boxShadow: '0 12px 32px rgba(0,0,0,0.6)'
+                           }}>
+
+                              {/* Room Info Row */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                 <span style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <Map size={12} /> Room
+                                 </span>
+                                 <span suppressHydrationWarning style={{ fontSize: '12px', fontWeight: '700', color: '#e2e8f0', fontFamily: 'monospace', letterSpacing: '1px' }}>{roomLabel}</span>
+                              </div>
+
+                              {/* Occupancy */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                 <span style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <UserCheck size={12} /> Occupancy
+                                 </span>
+                                 <span style={{ fontSize: '12px', fontWeight: '700', color: roomState.occupancy ? '#3b82f6' : '#475569' }}>
+                                    {roomState.occupancy ? 'Guest Present' : 'Empty'}
+                                 </span>
+                              </div>
+
+                              {/* Door */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                 <span style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    {roomState.doorLocked ? <Lock size={12} /> : <Unlock size={12} />} Door
+                                 </span>
+                                 <span style={{ fontSize: '12px', fontWeight: '700', color: roomState.doorLocked ? '#22c55e' : '#ef4444' }}>
+                                    {roomState.doorLocked ? 'Secured' : 'Unlocked'}
+                                 </span>
+                              </div>
+
+                              {/* Device Status Grid */}
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                                 {/* Lights */}
+                                 <div style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: `1px solid ${isAnyLightOn ? 'rgba(234,179,8,0.3)' : 'rgba(255,255,255,0.05)'}`, display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                    <Lightbulb size={14} color={isAnyLightOn ? '#eab308' : '#475569'} style={{ filter: isAnyLightOn ? 'drop-shadow(0 0 4px #eab308)' : 'none' }} />
+                                    <span style={{ fontSize: '9px', color: isAnyLightOn ? '#eab308' : '#475569', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{isAnyLightOn ? 'Lights On' : 'Lights Off'}</span>
+                                 </div>
+                                 {/* AC */}
+                                 <div style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: `1px solid ${roomState.ac?.isOn ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.05)'}`, display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                    <Wind size={14} color={roomState.ac?.isOn ? '#38bdf8' : '#475569'} style={{ filter: roomState.ac?.isOn ? 'drop-shadow(0 0 4px #38bdf8)' : 'none' }} />
+                                    <span style={{ fontSize: '9px', color: roomState.ac?.isOn ? '#38bdf8' : '#475569', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{roomState.ac?.isOn ? `AC ${roomState.ac.temp}°C` : 'AC Off'}</span>
+                                 </div>
+                                 {/* TV */}
+                                 <div style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: `1px solid ${roomState.tv ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.05)'}`, display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                    <Tv size={14} color={roomState.tv ? '#3b82f6' : '#475569'} style={{ filter: roomState.tv ? 'drop-shadow(0 0 4px #3b82f6)' : 'none' }} />
+                                    <span style={{ fontSize: '9px', color: roomState.tv ? '#3b82f6' : '#475569', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{roomState.tv ? 'TV On' : 'TV Off'}</span>
+                                 </div>
+                                 {/* Smoke */}
+                                 <div style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: `1px solid ${roomState.smokeDetected ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.05)'}`, display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
+                                    <ShieldAlert size={14} color={roomState.smokeDetected ? '#ef4444' : '#475569'} style={{ filter: roomState.smokeDetected ? 'drop-shadow(0 0 4px #ef4444)' : 'none' }} />
+                                    <span style={{ fontSize: '9px', color: roomState.smokeDetected ? '#ef4444' : '#475569', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{roomState.smokeDetected ? '⚠ Smoke!' : 'Safe'}</span>
+                                 </div>
+                              </div>
+
+                              {/* Temp Bar */}
+                              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                    <span style={{ fontSize: '10px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}><Thermometer size={11} /> Ambient Temp</span>
+                                    <span style={{ fontSize: '11px', fontWeight: '700', color: (roomState.ambientTemp || 24.5) > 26 ? '#f87171' : '#38bdf8', fontFamily: 'monospace' }}>{roomState.ambientTemp || 24.5}°C</span>
+                                 </div>
+                                 <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                                    <motion.div
+                                       animate={{ width: `${Math.min(100, Math.max(0, ((roomState.ambientTemp || 24.5) - 16) / 14 * 100))}%` }}
+                                       transition={{ duration: 0.5 }}
+                                       style={{ height: '100%', background: (roomState.ambientTemp || 24.5) > 26 ? 'linear-gradient(90deg, #f97316, #ef4444)' : 'linear-gradient(90deg, #38bdf8, #3b82f6)', borderRadius: '4px' }}
+                                    />
+                                 </div>
+                              </div>
+
+
+{/* ── Switch Room Grid (hideable) ─────────────── */}
+{(() => {
+  const guestRooms = (adminRooms || []).filter(
+    r => r.code !== 'ADMIN-ROOM' && r.code !== 'GUEST-ROOM'
+  );
+  return (
+    <div style={{ marginTop: '10px' }}>
+      {/* Toggle button */}
+      <button
+        onClick={() => setRoomGridOpen(p => !p)}
+        style={{
+          width: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          borderRadius: roomGridOpen ? '8px 8px 0 0' : '8px',
+          padding: '7px 10px',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+        }}
+        onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+        onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+          <Map size={11} color="#60a5fa" />
+          Switch Room
+          <span style={{ background: 'rgba(59,130,246,0.18)', color: '#60a5fa', fontSize: '9px', fontWeight: '700', padding: '1px 6px', borderRadius: '10px', border: '1px solid rgba(59,130,246,0.25)' }}>
+            {guestRooms.length}
+          </span>
+        </span>
+        {roomGridOpen
+          ? <ChevronUp size={12} color="#64748b" />
+          : <ChevronDown size={12} color="#64748b" />
+        }
+      </button>
+
+      {/* Collapsible grid */}
+      <AnimatePresence>
+        {roomGridOpen && (
+          <motion.div
+            key="room-grid"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{
+              background: 'rgba(10,12,20,0.6)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderTop: 'none',
+              borderRadius: '0 0 8px 8px',
+              padding: '8px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '5px',
+              maxHeight: '200px',
+              overflowY: 'auto',
+            }}>
+              {guestRooms.length > 0 ? guestRooms.map((room) => {
+                const isCurrent = room.code === roomLabel;
+                return (
+                  <button
+                    key={room.id}
+                    onClick={() => router.push(`/visualization?roomId=${room.id}&roomCode=${room.code}`)}
+                    style={{
+                      background: isCurrent ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${isCurrent ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                      borderRadius: '6px',
+                      padding: '6px 8px',
+                      color: isCurrent ? '#60a5fa' : '#94a3b8',
+                      fontSize: '10px',
+                      fontWeight: isCurrent ? '700' : '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      textAlign: 'left',
+                      fontFamily: 'monospace',
+                      letterSpacing: '0.3px',
+                    }}
+                    onMouseOver={e => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = '#e2e8f0'; }}}
+                    onMouseOut={e => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#94a3b8'; }}}
+                  >
+                    {room.code}
+                    {room.hasGuest && <span style={{ marginLeft: '4px', color: '#3b82f6', fontSize: '8px' }}>●</span>}
+                  </button>
+                );
+              }) : (
+                <span style={{ gridColumn: '1/-1', fontSize: '10px', color: '#475569', textAlign: 'center', padding: '8px' }}>No rooms found</span>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+})()}
+
+
+                              {/* Back to Ground Map */}
+                              <a
+                                 href="/admin"
+                                 style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                                    padding: '9px', borderRadius: '8px',
+                                    background: 'rgba(59, 130, 246, 0.12)',
+                                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                                    color: '#60a5fa', fontSize: '12px', fontWeight: '600',
+                                    textDecoration: 'none', transition: 'all 0.2s',
+                                 }}
+                                 onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.22)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.5)'; }}
+                                 onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(59,130,246,0.12)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.25)'; }}
+                              >
+                                 <Map size={13} /> Back to Ground Map
+                              </a>
+
+                           </div>
+                        </motion.div>
+                     )}
+                  </AnimatePresence>
+               </motion.div>
+            )}
+         </AnimatePresence>
+
       </div>
    );
 }

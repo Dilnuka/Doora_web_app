@@ -111,7 +111,7 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.6 }}
         style={{
-          position: 'absolute',
+          position: 'fixed',
           bottom: '24px',
           right: '24px',
           display: 'flex',

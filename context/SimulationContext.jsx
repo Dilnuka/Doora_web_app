@@ -10,7 +10,14 @@ const SimulationContext = createContext();
 
 export const SimulationProvider = ({ children }) => {
   const { data: session, status } = useSession();
-  const roomId = session?.user?.roomId || null;
+  const isAdmin = session?.user?.role === 'ADMIN';
+  const [activeRoomId, setActiveRoomId] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).get("roomId");
+    }
+    return null;
+  });
+  const roomId = (isAdmin && activeRoomId) ? activeRoomId : (session?.user?.roomId || null);
 
   const [roomState, setRoomState] = useState(DEFAULT_ROOM_STATE);
   const [serviceQueue, setServiceQueue] = useState([]);
@@ -32,10 +39,13 @@ export const SimulationProvider = ({ children }) => {
     snapshotRef.current = { roomState, serviceQueue, logs };
   }, [roomState, serviceQueue, logs]);
 
+  const isAdminViewingRoom = isAdmin && !!activeRoomId;
+
   const flushPersist = useCallback(async () => {
-    if (!roomId || !persistReadyRef.current) return;
+    // Do NOT write state back when admin is viewing another room in read-only mode
+    if (!roomId || !persistReadyRef.current || isAdminViewingRoom) return;
     await persistRoomSnapshot(snapshotRef.current);
-  }, [roomId]);
+  }, [roomId, isAdminViewingRoom]);
 
   const queuePersist = useCallback(
     (immediate = false) => {
@@ -64,6 +74,10 @@ export const SimulationProvider = ({ children }) => {
 
   // Restore saved state after login (wait until session is authenticated).
   useEffect(() => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+
     if (status !== "authenticated" || !roomId) {
       persistReadyRef.current = false;
       acceptMqttRef.current = false;
@@ -78,11 +92,16 @@ export const SimulationProvider = ({ children }) => {
 
     (async () => {
       try {
-        const data = await loadRoomSnapshot();
+        // If admin is viewing a specific room via URL, load that room's state directly
+        const adminRoomId = (isAdmin && activeRoomId) ? activeRoomId : null;
+        const data = await loadRoomSnapshot(adminRoomId);
         if (cancelled) return;
-        if (data.roomState) setRoomState(data.roomState);
-        if (Array.isArray(data.serviceQueue)) setServiceQueue(data.serviceQueue);
-        if (Array.isArray(data.logs)) setLogs(data.logs);
+        
+        // Ensure state resets to default if snapshot contains no state
+        setRoomState(data.roomState || DEFAULT_ROOM_STATE);
+        setServiceQueue(Array.isArray(data.serviceQueue) ? data.serviceQueue : []);
+        setLogs(Array.isArray(data.logs) ? data.logs : []);
+        
         persistReadyRef.current = true;
         setTimeout(() => {
           acceptMqttRef.current = true;
@@ -98,7 +117,7 @@ export const SimulationProvider = ({ children }) => {
     return () => {
       cancelled = true;
     };
-  }, [roomId, status]);
+  }, [roomId, activeRoomId, isAdmin, status]);
 
   useEffect(() => {
     if (!roomId || !isHydrated || !persistReadyRef.current) return;
@@ -451,6 +470,7 @@ export const SimulationProvider = ({ children }) => {
         logs,
         addLog,
         signOutAndSave,
+        setActiveRoomId,
       }}
     >
       {children}

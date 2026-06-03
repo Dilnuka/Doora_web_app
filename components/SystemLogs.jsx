@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function SystemLogs() {
   const { serviceQueue, logs, signOutAndSave } = useSimulation();
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const { data: session } = useSession();
   const displayName = session?.user?.name || session?.user?.email || "Guest";
   const roomLabel = session?.user?.roomCode || "Private Suite";

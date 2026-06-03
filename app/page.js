@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { LogOut, Smartphone, Monitor, Cpu, Radio, Shield, Zap } from 'lucide-react';
+import { LogOut, Smartphone, Monitor, Cpu, Radio, Shield, Zap, Map, ChevronRight } from 'lucide-react';
 import { useSimulation } from '@/context/SimulationContext';
 import ParticleNetwork from '@/components/ParticleNetwork';
 import { motion } from 'framer-motion';
@@ -56,15 +56,16 @@ export default function Home() {
     <main className="landing-main" style={{
       position: 'relative',
       width: '100vw',
-      height: '100vh',
+      minHeight: '100vh',
       background: '#050508',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       color: 'white',
       fontFamily: 'var(--font-inter), system-ui, sans-serif',
-      overflow: 'hidden',
+      overflowX: 'hidden',
+      overflowY: 'auto',
       padding: '20px'
     }}>
       {/* Particle network background */}
@@ -78,12 +79,16 @@ export default function Home() {
         maxWidth: '1100px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        paddingTop: session ? '56px' : '0px',
+        paddingBottom: '60px',
+        minHeight: '100vh',
+        justifyContent: session?.user?.role === 'ADMIN' ? 'flex-start' : 'center'
       }}>
         
         {/* Logout Button */}
         {session && (
-          <div style={{ position: 'absolute', top: '-10px', right: '0px', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 10 }}>
+          <div style={{ position: 'fixed', top: '20px', right: '28px', display: 'flex', alignItems: 'center', gap: '12px', zIndex: 100 }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{session.user.name || session.user.email}</span>
               <span style={{ fontSize: '11px', color: '#8b5cf6', background: 'rgba(139, 92, 246, 0.2)', padding: '1px 6px', borderRadius: '10px', marginTop: '2px' }}>{session.user.role}</span>
@@ -354,6 +359,118 @@ export default function Home() {
 
         </motion.div>
 
+        {/* ── ADMIN: Room Maps Management Section ─────────────────────── */}
+        {session?.user?.role === 'ADMIN' && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6, ease: 'easeOut' }}
+            style={{ width: '100%', marginTop: '28px' }}
+          >
+            {/* Section Label */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '14px',
+              justifyContent: 'center'
+            }}>
+              <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to right, transparent, rgba(239,68,68,0.25))' }} />
+              <span style={{
+                display: 'flex', alignItems: 'center', gap: '6px',
+                fontSize: '10px', fontWeight: '700', letterSpacing: '1.5px',
+                textTransform: 'uppercase', color: '#f87171',
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                padding: '3px 12px', borderRadius: '30px'
+              }}>
+                <Shield size={10} /> Admin Controls
+              </span>
+              <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to left, transparent, rgba(239,68,68,0.25))' }} />
+            </div>
+
+            {/* Admin Cards Row */}
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+
+              {/* Room Maps Management Card */}
+              <Link href="/admin" style={{ textDecoration: 'none', flex: '1 1 280px', maxWidth: '360px' }}>
+                <motion.div
+                  whileHover={{
+                    y: -5,
+                    borderColor: 'rgba(239,68,68,0.45)',
+                    boxShadow: '0 16px 40px -12px rgba(239,68,68,0.3), 0 0 0 1px rgba(239,68,68,0.1)'
+                  }}
+                  transition={{ duration: 0.25 }}
+                  style={{
+                    position: 'relative',
+                    background: 'rgba(20,22,28,0.75)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(239,68,68,0.2)',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: '20px 22px',
+                    gap: '18px'
+                  }}
+                >
+                  {/* Glow blob */}
+                  <div style={{
+                    position: 'absolute', top: '-30px', right: '-30px',
+                    width: '120px', height: '120px',
+                    background: 'radial-gradient(circle, rgba(239,68,68,0.18) 0%, transparent 70%)',
+                    pointerEvents: 'none'
+                  }} />
+
+                  {/* Icon */}
+                  <div style={{
+                    flexShrink: 0,
+                    width: '52px', height: '52px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, rgba(239,68,68,0.25) 0%, rgba(239,68,68,0.08) 100%)',
+                    border: '1px solid rgba(239,68,68,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 16px rgba(239,68,68,0.15)'
+                  }}>
+                    <Map size={24} color="#f87171" />
+                  </div>
+
+                  {/* Text */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '16px', fontWeight: '700', color: '#fff' }}>Room Maps</span>
+                      <span style={{
+                        fontSize: '9px', fontWeight: '700',
+                        background: 'rgba(239,68,68,0.15)', color: '#f87171',
+                        border: '1px solid rgba(239,68,68,0.25)',
+                        padding: '1px 7px', borderRadius: '20px', letterSpacing: '0.8px', textTransform: 'uppercase'
+                      }}>ADMIN</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: '1.45' }}>
+                      View all hotel rooms on an interactive floor map. Monitor occupancy, device states and navigate to any room blueprint.
+                    </p>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: '5px',
+                      marginTop: '10px', fontSize: '11px', color: '#f87171', fontWeight: '600'
+                    }}>
+                      Open Floor Map <ChevronRight size={13} />
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+
+            </div>
+
+          </motion.div>
+        )}
+
       </div>
 
       {/* Branding Footer */}
@@ -363,7 +480,7 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.6 }}
         style={{
-          position: 'absolute',
+          position: 'fixed',
           bottom: '24px',
           right: '24px',
           display: 'flex',
