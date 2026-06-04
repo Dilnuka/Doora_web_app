@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useSimulation } from "@/context/SimulationContext";
-import { Send, Lightbulb, Thermometer, User, Tv, Blinds, Lock, Unlock, Wind, Mic, MicOff, Cloud, Sun, CloudRain, Power, Plus, Minus, MapPin, ShieldAlert, AlarmClock, BellRing, LogOut, ArrowLeft, Clock } from "lucide-react";
+import { Send, Lightbulb, Thermometer, User, Tv, Blinds, Lock, Unlock, Wind, Mic, MicOff, Cloud, Sun, CloudRain, Power, Plus, Minus, MapPin, ShieldAlert, AlarmClock, BellRing, LogOut, ArrowLeft, Clock, List } from "lucide-react";
+import SmartRoutinesModal from "./SmartRoutinesModal";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -181,6 +182,7 @@ export default function GuestApp() {
   // Weather API state
   const [weather, setWeather] = useState({ temp: "--", condition: "Loading...", location: "Locating..." });
   const [activeRoom, setActiveRoom] = useState("Living Area");
+  const [routinesOpen, setRoutinesOpen] = useState(false);
 
   const endOfMessagesRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -270,10 +272,25 @@ export default function GuestApp() {
         data.tools.forEach(tool => {
           if (tool.name === "set_light") setLight(tool.args.zone, tool.args.state);
           if (tool.name === "set_temperature") setAc(true, tool.args.temp);
+          if (tool.name === "set_ac_power") setAc(tool.args.state, undefined);
           if (tool.name === "set_tv") setTv(tool.args.state);
-          if (tool.name === "set_curtains") setCurtains(tool.args.zone || 'living', tool.args.state);
+          if (tool.name === "set_curtains") {
+            if (tool.args.zone === "all") {
+              setCurtains('living', tool.args.state);
+              setCurtains('bed', tool.args.state);
+            } else {
+              setCurtains(tool.args.zone || 'living', tool.args.state);
+            }
+          }
           if (tool.name === "set_door") setDoor(tool.args.state);
-          if (tool.name === "set_window") setWindow(tool.args.zone || 'living', tool.args.state);
+          if (tool.name === "set_window") {
+            if (tool.args.zone === "all") {
+              setWindow('living', tool.args.state);
+              setWindow('bed', tool.args.state);
+            } else {
+              setWindow(tool.args.zone || 'living', tool.args.state);
+            }
+          }
           if (tool.name === "set_alarm") setAlarm(tool.args.enabled, tool.args.time);
           if (tool.name === "dismiss_alarm") dismissAlarm();
         });
@@ -425,6 +442,19 @@ export default function GuestApp() {
                 {getWeatherIcon()}
               </div>
             </div>
+
+            {/* Smart Routines Button */}
+            <button
+              onClick={() => setRoutinesOpen(true)}
+              style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.05) 100%)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '32px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', cursor: 'pointer', transition: 'all 0.3s' }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(59,130,246,0.2)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+            >
+              <div style={{ background: '#3b82f6', borderRadius: '50%', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <List size={24} color="white" />
+              </div>
+              <span style={{ color: 'white', fontWeight: '600', fontSize: '16px', whiteSpace: 'nowrap' }}>Smart Routines</span>
+            </button>
           </div>
         </div>
 
@@ -657,6 +687,14 @@ export default function GuestApp() {
         </form>
       </div>
 
+      <SmartRoutinesModal 
+        isOpen={routinesOpen} 
+        onClose={() => setRoutinesOpen(false)} 
+        onTrigger={(phrase) => {
+          setRoutinesOpen(false);
+          if (sendMessageRef.current) sendMessageRef.current(phrase);
+        }}
+      />
     </div>
   );
 }
