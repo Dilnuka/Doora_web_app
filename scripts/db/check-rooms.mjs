@@ -1,4 +1,4 @@
-// Debug script - run with: node prisma/check-rooms.mjs
+// Run from project root: node scripts/db/check-rooms.mjs
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';

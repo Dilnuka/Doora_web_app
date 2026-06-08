@@ -194,7 +194,7 @@ export default function Home() {
                     NODE A • CONTROLLER
                   </div>
                   <motion.img 
-                    src="/smart-home-control-panel33-1.jpg" 
+                    src="/images/landing/smart-home-control-panel33-1.jpg" 
                     alt="Smart Home Control Panel"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     whileHover={{ scale: 1.05 }}
@@ -310,7 +310,7 @@ export default function Home() {
                     NODE B • VISUALIZATION
                   </div>
                   <motion.img 
-                    src="/smart-homes-integrated-devices-1030x875.png" 
+                    src="/images/landing/smart-homes-integrated-devices-1030x875.png" 
                     alt="Smart Homes Integrated Devices"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     whileHover={{ scale: 1.05 }}
@@ -516,7 +516,7 @@ export default function Home() {
           }}
         >
           <motion.img
-            src="/Vector-scaled-Photoroom.png"
+            src="/images/branding/Vector-scaled-Photoroom.png"
             alt="VSIS Logo"
             style={{
               height: '18px',

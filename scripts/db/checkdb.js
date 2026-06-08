@@ -1,4 +1,4 @@
-// Run: node prisma/checkdb.js
+// Run from project root: node scripts/db/checkdb.js
 require('dotenv').config({ path: '.env' });
 const { PrismaClient } = require('@prisma/client');
 const { Pool } = require('pg');

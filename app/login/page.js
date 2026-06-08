@@ -147,7 +147,7 @@ export default function LoginPage() {
           }}
         >
           <motion.img
-            src="/Vector-scaled-Photoroom.png"
+            src="/images/branding/Vector-scaled-Photoroom.png"
             alt="VSIS Logo"
             style={{
               height: '18px',

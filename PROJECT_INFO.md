@@ -36,7 +36,8 @@ The database models a multi-tenant or multi-room system with the following core 
     *   `SystemLogs.jsx`: Component to display real-time system logs or events.
     *   `ParticleNetwork.jsx` & `SplashScreen.jsx`: UI and animation components.
 *   **`/prisma`**: Database configuration (`schema.prisma`) and seed scripts.
-*   **`/public`**: Static assets, including smart home imagery.
+*   **`/public/images`**: Static images (`landing/` for UI cards, `branding/` for logos).
+*   **`/scripts`**: Dev utilities; database helpers live in `scripts/db/`.
 
 ## 5. Key Features & Workflows
 *   **Role-Based Access Control:** Differentiates between Admins (full control, map views) and Guests (limited to their assigned room).
