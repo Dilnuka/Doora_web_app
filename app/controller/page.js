@@ -1,9 +1,10 @@
 "use client";
 import GuestApp from "@/components/GuestApp";
+import styles from "./controller.module.css";
 
 export default function ControllerPage() {
   return (
-    <main style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#0a0b10', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <main className={styles.main}>
       <GuestApp />
     </main>
   );

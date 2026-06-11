@@ -6,6 +6,7 @@ import SmartRoutinesModal from "./SmartRoutinesModal";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import styles from "./GuestApp.module.css";
 
 // Time of Day Animation Component
 const TimeAnimation = ({ period }) => {
@@ -317,217 +318,211 @@ export default function GuestApp() {
   };
 
   const DeviceCard = ({ title, icon, active, onClick, activeColor }) => (
-    <div 
+    <div
       onClick={onClick}
+      className={styles.deviceCard}
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${active ? activeColor : 'rgba(255,255,255,0.05)'}`,
-        borderRadius: '24px',
-        padding: '24px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '24px',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        boxShadow: active ? `0 8px 32px ${activeColor}20` : 'none',
-        height: '100%',
+        border: `1px solid ${active ? activeColor : "rgba(255,255,255,0.05)"}`,
+        boxShadow: active ? `0 8px 32px ${activeColor}20` : "none",
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ 
-          width: '56px', height: '56px', borderRadius: '50%', 
-          background: active ? activeColor : 'rgba(255,255,255,0.05)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          {React.cloneElement(icon, { color: active ? 'white' : '#94a3b8', size: 28 })}
+      <div className={styles.deviceCardHeader}>
+        <div
+          className={styles.deviceIcon}
+          style={{ background: active ? activeColor : "rgba(255,255,255,0.05)" }}
+        >
+          {React.cloneElement(icon, { color: active ? "white" : "#94a3b8", size: 28 })}
         </div>
-        <div style={{ width: '48px', height: '28px', borderRadius: '14px', background: active ? activeColor : 'rgba(255,255,255,0.1)', position: 'relative', transition: '0.3s' }}>
-          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: active ? '22px' : '2px', transition: '0.3s' }} />
+        <div
+          className={styles.deviceToggle}
+          style={{ background: active ? activeColor : "rgba(255,255,255,0.1)" }}
+        >
+          <div
+            className={styles.deviceToggleKnob}
+            style={{ left: active ? "22px" : "2px" }}
+          />
         </div>
       </div>
       <div>
-        <h4 style={{ margin: 0, color: 'white', fontSize: '20px', fontWeight: '500' }}>{title}</h4>
-        <p style={{ margin: '8px 0 0 0', color: '#94a3b8', fontSize: '14px' }}>{active ? 'ONLINE' : 'OFFLINE'}</p>
+        <h4 className={styles.deviceTitle}>{title}</h4>
+        <p className={styles.deviceStatus}>{active ? "ONLINE" : "OFFLINE"}</p>
       </div>
     </div>
   );
 
+  const acArcLength = 2 * Math.PI * 135;
+  const acArcOffset = acArcLength - (acArcLength * (roomState.ac.temp - 16) / 14);
+
   return (
-    <div className="guest-main" style={{ width: '100vw', height: '100vh', background: '#0a0b10', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column' }}>
-      
-      {/* Desktop Content Area */}
-      <div className="guest-content" style={{ flex: 1, overflowY: 'auto', padding: '40px 60px', paddingBottom: '160px' }}>
-        
-        {/* Top Header & Weather Row */}
-        <div className="guest-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
-          
-          <div className="guest-header-user" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <Link href="/" style={{ textDecoration: 'none' }}>
-              <button
-                title="Back to selecting screen"
-                style={{
-                  width: '48px', height: '48px', borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                  color: '#94a3b8'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'white'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'scale(1.05)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'scale(1)'; }}
-              >
+    <div className={styles.app}>
+      <div className={styles.scroll}>
+        <div className={styles.shell}>
+        <header className={styles.header}>
+          <div className={styles.headerTop}>
+            <Link href="/" style={{ textDecoration: "none" }}>
+              <button type="button" className={styles.iconBtn} title="Back to selecting screen">
                 <ArrowLeft size={20} />
               </button>
             </Link>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.1)' }}>
+            <div className={styles.avatar}>
               <User size={40} color="white" />
             </div>
-            <div>
-              <p style={{ color: '#94a3b8', margin: 0, fontSize: '18px' }}>Welcome back,</p>
-              <h2 style={{ color: 'white', margin: '4px 0 0 0', fontSize: '36px', fontWeight: 'bold' }}>{displayName}</h2>
-              <p style={{ color: '#3b82f6', margin: '4px 0 0 0', fontSize: '14px', fontWeight: '500' }}>{roomLabel} • Connected</p>
+            <div className={styles.userText}>
+              <p className={styles.welcome}>Welcome back,</p>
+              <h2 className={styles.userName}>{displayName}</h2>
+              <p className={styles.roomMeta}>{roomLabel} • Connected</p>
             </div>
-            {/* Logout button */}
             <button
+              type="button"
               onClick={() => signOutAndSave()}
               title="Sign out"
-              style={{
-                marginLeft: '16px',
-                width: '48px', height: '48px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', transition: 'all 0.2s',
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
             >
-              <LogOut size={20} color="#94a3b8" />
+              <LogOut size={20} />
             </button>
           </div>
 
-          <div className="guest-header-cards" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            {/* Time of Day Card */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '32px', padding: '24px 40px', display: 'flex', gap: '32px', alignItems: 'center' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', marginBottom: '8px' }}>
+          <div className={styles.headerCards}>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardBody}>
+                <div className={styles.infoCardLabel}>
                   <Clock size={16} color={periodColor} />
-                  <p style={{ margin: 0, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>System Time</p>
+                  <p>System Time</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <h1 style={{ color: 'white', margin: 0, fontSize: '42px', fontWeight: '300', lineHeight: 1 }}>{timeStr.split(' ')[0]}</h1>
-                  <span style={{ color: periodColor, fontSize: '18px', fontWeight: '500' }}>{timeStr.split(' ')[1]}</span>
+                <div className={styles.timeRow}>
+                  <h1 className={styles.timeValue}>{timeStr.split(" ")[0]}</h1>
+                  <span className={styles.timePeriod} style={{ color: periodColor }}>
+                    {timeStr.split(" ")[1]}
+                  </span>
                 </div>
-                <p style={{ margin: '8px 0 0 0', fontSize: '15px', color: '#94a3b8' }}>{fullDateStr} • <span style={{ color: 'white', fontWeight: '500' }}>{label} Mode</span></p>
+                <p className={styles.timeSub}>
+                  {fullDateStr} • <span style={{ color: "white", fontWeight: 500 }}>{label} Mode</span>
+                </p>
               </div>
-              <div style={{ paddingLeft: '32px', borderLeft: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px' }}>
+              <div className={styles.infoCardIcon}>
                 <TimeAnimation period={period} />
               </div>
             </div>
 
-            {/* Weather Card */}
-            <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '32px', padding: '24px 40px', display: 'flex', gap: '40px', alignItems: 'center' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', marginBottom: '8px' }}>
+            <div className={styles.infoCard}>
+              <div className={styles.infoCardBody}>
+                <div className={styles.infoCardLabel}>
                   <MapPin size={16} color="#38bdf8" />
-                  <p style={{ margin: 0, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>{weather.location}</p>
+                  <p>{weather.location}</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <h1 style={{ color: 'white', margin: 0, fontSize: '56px', fontWeight: '300', lineHeight: 1 }}>{weather.temp}°</h1>
-                  <span style={{ color: '#38bdf8', fontSize: '20px', marginTop: '4px', fontWeight: '500' }}>C</span>
+                <div className={styles.timeRow}>
+                  <h1 className={styles.weatherTemp}>{weather.temp}°</h1>
+                  <span style={{ color: "#38bdf8", fontSize: "1.25rem", fontWeight: 500 }}>C</span>
                 </div>
-                <p style={{ color: 'white', margin: '8px 0 0 0', fontSize: '18px' }}>{weather.condition}</p>
+                <p className={styles.timeSub} style={{ color: "white" }}>{weather.condition}</p>
               </div>
-              <div style={{ paddingLeft: '40px', borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-                {getWeatherIcon()}
-              </div>
+              <div className={styles.infoCardIcon}>{getWeatherIcon()}</div>
             </div>
 
-            {/* Smart Routines Button */}
-            <button
-              onClick={() => setRoutinesOpen(true)}
-              style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.05) 100%)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '32px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', cursor: 'pointer', transition: 'all 0.3s' }}
-              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(59,130,246,0.2)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              <div style={{ background: '#3b82f6', borderRadius: '50%', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button type="button" onClick={() => setRoutinesOpen(true)} className={styles.routinesBtn}>
+              <div className={styles.routinesIcon}>
                 <List size={24} color="white" />
               </div>
-              <span style={{ color: 'white', fontWeight: '600', fontSize: '16px', whiteSpace: 'nowrap' }}>Smart Routines</span>
+              <span className={styles.routinesLabel}>Smart Routines</span>
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Room Tabs */}
-        <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', marginBottom: '40px', scrollbarWidth: 'none' }}>
-          {['Entrance', 'Kitchen', 'Living Area', 'Bedroom', 'Bathroom'].map(room => (
-            <button 
+        <div className={styles.roomTabs}>
+          {["Entrance", "Kitchen", "Living Area", "Bedroom", "Bathroom"].map((room) => (
+            <button
               key={room}
+              type="button"
               onClick={() => setActiveRoom(room)}
-              style={{ 
-                padding: '16px 32px', borderRadius: '30px', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer',
-                background: activeRoom === room ? 'white' : 'rgba(255,255,255,0.05)',
-                color: activeRoom === room ? 'black' : '#94a3b8',
-                fontSize: '16px',
-                fontWeight: activeRoom === room ? '600' : '400',
-                transition: 'all 0.2s'
-              }}
+              className={`${styles.roomTab} ${activeRoom === room ? styles.roomTabActive : styles.roomTabInactive}`}
             >
               {room}
             </button>
           ))}
         </div>
 
-        {/* Main 2-Column Dashboard Grid */}
-        <div className="guest-grid" style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '40px' }}>
-          
-          {/* Left Column: AC Controller */}
-          <div className="guest-ac-col" style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '40px', padding: '40px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div className={styles.dashboard}>
+          <section className={styles.acPanel}>
+            <div className={styles.acHeader}>
               <div>
-                <h3 style={{ color: 'white', margin: 0, fontSize: '24px' }}>Air Conditioner</h3>
-                <p style={{ color: '#94a3b8', margin: '4px 0 0 0', fontSize: '14px' }}>{activeRoom}</p>
+                <h3 className={styles.acTitle}>Air Conditioner</h3>
+                <p className={styles.acSubtitle}>{activeRoom}</p>
               </div>
-              <button 
+              <button
+                type="button"
                 onClick={() => setAc(!roomState.ac.isOn, roomState.ac.temp)}
-                style={{ background: roomState.ac.isOn ? '#10b981' : 'rgba(255,255,255,0.1)', border: 'none', padding: '16px', borderRadius: '50%', cursor: 'pointer', transition: 'all 0.3s' }}
+                className={`${styles.powerBtn} ${roomState.ac.isOn ? styles.powerBtnOn : styles.powerBtnOff}`}
               >
                 <Power size={24} color="white" />
               </button>
             </div>
-            
-            {/* Circular Dial */}
-            <div style={{ position: 'relative', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: '2px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: roomState.ac.isOn ? '0 0 60px rgba(56, 189, 248, 0.15)' : 'none' }}>
-              <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                <circle cx="150" cy="150" r="135" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
+
+            <div className={styles.acDialWrap}>
+              <div className={`${styles.acDial} ${roomState.ac.isOn ? styles.acDialOn : ""}`}>
+                <svg viewBox="0 0 300 300" className={styles.acDialSvg} aria-hidden="true">
+                  <circle cx="150" cy="150" r="135" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
+                  {roomState.ac.isOn && (
+                    <circle
+                      cx="150"
+                      cy="150"
+                      r="135"
+                      fill="none"
+                      stroke="#38bdf8"
+                      strokeWidth="12"
+                      strokeDasharray={acArcLength}
+                      strokeDashoffset={acArcOffset}
+                      strokeLinecap="round"
+                      style={{ transition: "stroke-dashoffset 0.5s ease" }}
+                    />
+                  )}
+                </svg>
+
+                <div className={styles.acDialCenter}>
+                  <p className={styles.acDialLabel}>TARGET</p>
+                  <div className={styles.acDialTemp}>
+                    <span
+                      className={styles.acDialTempValue}
+                      style={{ color: roomState.ac.isOn ? "white" : "#64748b" }}
+                    >
+                      {roomState.ac.temp}
+                    </span>
+                    <span
+                      className={styles.acDialTempUnit}
+                      style={{ color: roomState.ac.isOn ? "#38bdf8" : "#64748b" }}
+                    >
+                      °
+                    </span>
+                  </div>
+                  <div className={styles.acDialAmbient}>
+                    <p>Ambient: {roomState.ambientTemp}°C</p>
+                  </div>
+                </div>
+
                 {roomState.ac.isOn && (
-                  <circle cx="150" cy="150" r="135" fill="none" stroke="#38bdf8" strokeWidth="12" strokeDasharray="848" strokeDashoffset={848 - (848 * (roomState.ac.temp - 16) / 14)} strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setAc(true, Math.max(16, roomState.ac.temp - 1))}
+                      className={`${styles.acDialBtn} ${styles.acDialBtnMinus}`}
+                      aria-label="Decrease temperature"
+                    >
+                      <Minus size={24} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAc(true, Math.min(30, roomState.ac.temp + 1))}
+                      className={`${styles.acDialBtn} ${styles.acDialBtnPlus}`}
+                      aria-label="Increase temperature"
+                    >
+                      <Plus size={24} />
+                    </button>
+                  </>
                 )}
-              </svg>
-              
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ color: '#94a3b8', fontSize: '14px', margin: '0 0 8px 0', letterSpacing: '2px' }}>TARGET</p>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
-                  <span style={{ color: roomState.ac.isOn ? 'white' : '#64748b', fontSize: '72px', fontWeight: 'bold', lineHeight: 1 }}>{roomState.ac.temp}</span>
-                  <span style={{ color: roomState.ac.isOn ? '#38bdf8' : '#64748b', fontSize: '24px', fontWeight: 'bold', marginTop: '8px' }}>°</span>
-                </div>
-                <div style={{ marginTop: '16px', padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <p style={{ color: '#38bdf8', fontSize: '14px', margin: 0 }}>Ambient: {roomState.ambientTemp}°C</p>
-                </div>
               </div>
-
-              {/* Controls */}
-              {roomState.ac.isOn && (
-                <>
-                  <button onClick={() => setAc(true, Math.max(16, roomState.ac.temp - 1))} style={{ position: 'absolute', left: '-24px', top: '50%', transform: 'translateY(-50%)', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', color: 'white', width: '56px', height: '56px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}><Minus size={24} /></button>
-                  <button onClick={() => setAc(true, Math.min(30, roomState.ac.temp + 1))} style={{ position: 'absolute', right: '-24px', top: '50%', transform: 'translateY(-50%)', background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', color: 'white', width: '56px', height: '56px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}><Plus size={24} /></button>
-                </>
-              )}
             </div>
-          </div>
+          </section>
 
-          {/* Right Column: Device Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px', alignContent: 'start', paddingBottom: '120px' }}>
+          <div className={styles.deviceGrid}>
             
             {/* Entrance Devices */}
             {activeRoom === 'Entrance' && (
@@ -563,78 +558,70 @@ export default function GuestApp() {
                 <DeviceCard title="Bedroom Window" icon={<Wind />} active={roomState.windowOpen?.bed} onClick={() => setWindow('bed', !roomState.windowOpen?.bed)} activeColor="#0ea5e9" />
                 <DeviceCard title="Bedroom Curtains" icon={<Blinds />} active={roomState.curtains?.bed} onClick={() => setCurtains('bed', !roomState.curtains?.bed)} activeColor="#10b981" />
 
-                {/* Alarm Clock Card */}
-                <div style={{
-                  background: roomState.alarm?.ringing ? 'rgba(249,115,22,0.1)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${roomState.alarm?.ringing ? '#f97316' : roomState.alarm?.enabled ? 'rgba(249,115,22,0.35)' : 'rgba(255,255,255,0.05)'}`,
-                  borderRadius: '24px',
-                  padding: '24px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '20px',
-                  boxShadow: roomState.alarm?.ringing ? '0 8px 32px rgba(249,115,22,0.35)' : roomState.alarm?.enabled ? '0 4px 20px rgba(249,115,22,0.1)' : 'none',
-                  transition: 'all 0.3s ease',
-                }}>
-                  {/* Header row */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{
-                      width: '56px', height: '56px', borderRadius: '50%',
-                      background: roomState.alarm?.enabled ? '#f97316' : 'rgba(255,255,255,0.05)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      {roomState.alarm?.ringing
-                        ? <BellRing color="white" size={28} />
-                        : <AlarmClock color={roomState.alarm?.enabled ? 'white' : '#94a3b8'} size={28} />}
-                    </div>
-                    {/* Toggle */}
+                <div
+                  className={styles.alarmCard}
+                  style={{
+                    background: roomState.alarm?.ringing ? "rgba(249,115,22,0.1)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${roomState.alarm?.ringing ? "#f97316" : roomState.alarm?.enabled ? "rgba(249,115,22,0.35)" : "rgba(255,255,255,0.05)"}`,
+                    boxShadow: roomState.alarm?.ringing
+                      ? "0 8px 32px rgba(249,115,22,0.35)"
+                      : roomState.alarm?.enabled
+                        ? "0 4px 20px rgba(249,115,22,0.1)"
+                        : "none",
+                  }}
+                >
+                  <div className={styles.deviceCardHeader}>
                     <div
-                      onClick={() => setAlarm(!roomState.alarm?.enabled, roomState.alarm?.time)}
-                      style={{ width: '48px', height: '28px', borderRadius: '14px', background: roomState.alarm?.enabled ? '#f97316' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: '0.3s' }}
+                      className={styles.deviceIcon}
+                      style={{ background: roomState.alarm?.enabled ? "#f97316" : "rgba(255,255,255,0.05)" }}
                     >
-                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'white', position: 'absolute', top: '2px', left: roomState.alarm?.enabled ? '22px' : '2px', transition: '0.3s' }} />
+                      {roomState.alarm?.ringing ? (
+                        <BellRing color="white" size={28} />
+                      ) : (
+                        <AlarmClock color={roomState.alarm?.enabled ? "white" : "#94a3b8"} size={28} />
+                      )}
+                    </div>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setAlarm(!roomState.alarm?.enabled, roomState.alarm?.time)}
+                      onKeyDown={(e) => e.key === "Enter" && setAlarm(!roomState.alarm?.enabled, roomState.alarm?.time)}
+                      className={styles.deviceToggle}
+                      style={{ background: roomState.alarm?.enabled ? "#f97316" : "rgba(255,255,255,0.1)", cursor: "pointer" }}
+                    >
+                      <div
+                        className={styles.deviceToggleKnob}
+                        style={{ left: roomState.alarm?.enabled ? "22px" : "2px" }}
+                      />
                     </div>
                   </div>
 
-                  {/* Label */}
                   <div>
-                    <h4 style={{ margin: 0, color: 'white', fontSize: '20px', fontWeight: '500' }}>Alarm Clock</h4>
-                    <p style={{ margin: '6px 0 0 0', color: roomState.alarm?.ringing ? '#f97316' : '#94a3b8', fontSize: '14px', fontWeight: roomState.alarm?.ringing ? '600' : '400' }}>
-                      {roomState.alarm?.ringing ? '🔔 RINGING NOW' : roomState.alarm?.enabled ? `Set for ${roomState.alarm?.time}` : 'OFFLINE'}
+                    <h4 className={styles.deviceTitle}>Alarm Clock</h4>
+                    <p
+                      className={styles.deviceStatus}
+                      style={{
+                        color: roomState.alarm?.ringing ? "#f97316" : "#94a3b8",
+                        fontWeight: roomState.alarm?.ringing ? 600 : 400,
+                      }}
+                    >
+                      {roomState.alarm?.ringing
+                        ? "🔔 RINGING NOW"
+                        : roomState.alarm?.enabled
+                          ? `Set for ${roomState.alarm?.time}`
+                          : "OFFLINE"}
                     </p>
                   </div>
 
-                  {/* Time picker */}
                   <input
                     type="time"
-                    value={roomState.alarm?.time || '07:00'}
+                    value={roomState.alarm?.time || "07:00"}
                     onChange={(e) => setAlarm(roomState.alarm?.enabled || false, e.target.value)}
-                    style={{
-                      background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      borderRadius: '12px',
-                      color: 'white',
-                      padding: '10px 16px',
-                      fontSize: '20px',
-                      width: '100%',
-                      cursor: 'pointer',
-                      outline: 'none',
-                      boxSizing: 'border-box',
-                      colorScheme: 'dark',
-                    }}
+                    className={styles.alarmTimeInput}
                   />
 
-                  {/* Dismiss button — only shows when ringing */}
                   {roomState.alarm?.ringing && (
-                    <button
-                      onClick={dismissAlarm}
-                      style={{
-                        background: '#f97316', border: 'none', borderRadius: '14px',
-                        color: 'white', padding: '14px', fontSize: '15px', fontWeight: '700',
-                        cursor: 'pointer', letterSpacing: '2px', transition: 'background 0.2s'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.background = '#ea6c00'}
-                      onMouseOut={(e) => e.currentTarget.style.background = '#f97316'}
-                    >
+                    <button type="button" onClick={dismissAlarm} className={styles.alarmDismiss}>
                       DISMISS ALARM
                     </button>
                   )}
@@ -650,44 +637,46 @@ export default function GuestApp() {
             )}
 
           </div>
+        </div>
 
+        <div ref={endOfMessagesRef} aria-hidden="true" style={{ height: 1 }} />
         </div>
       </div>
 
-      {/* Floating Centered AI Chat Bar */}
-      <div className="guest-chat-bar" style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        
-        {/* Recent Chat Bubble */}
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+      <div className={styles.chatFloat} aria-label="Doora assistant">
+        <div className={styles.chatBubbleFloat} aria-live="polite">
           {messages.slice(-1).map((msg, idx) => (
-            <div key={idx} style={{ padding: '16px 24px', borderRadius: '24px', maxWidth: '80%', fontSize: '16px', lineHeight: '1.5', background: msg.role === 'user' ? '#3b82f6' : 'rgba(255,255,255,0.1)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
-              {isTyping && msg.role === 'user' ? "Thinking..." : msg.content}
+            <div
+              key={idx}
+              className={`${styles.chatBubble} ${msg.role === "user" ? styles.chatBubbleUser : styles.chatBubbleAi}`}
+            >
+              {isTyping && msg.role === "user" ? "Thinking..." : msg.content}
             </div>
           ))}
         </div>
-
-        <form onSubmit={handleSend} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(20,22,28,0.8)', padding: '12px 12px 12px 24px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-          <button 
+        <form onSubmit={handleSend} className={styles.chatFormFloat}>
+          <button
             type="button"
             onClick={toggleListen}
-            style={{ width: '48px', height: '48px', background: isListening ? '#ef4444' : 'rgba(255,255,255,0.05)', borderRadius: '50%', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
+            className={`${styles.micBtn} ${isListening ? styles.micBtnActive : styles.micBtnIdle}`}
+            aria-label={isListening ? "Stop listening" : "Start voice input"}
           >
             {isListening ? <MicOff size={24} /> : <Mic size={24} />}
           </button>
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isListening ? "Listening..." : "Ask Doora to do something..."} 
-            style={{ flex: 1, background: 'transparent', border: 'none', color: 'white', fontSize: '18px', outline: 'none' }}
+            placeholder={isListening ? "Listening..." : "Ask Doora to do something..."}
+            className={styles.chatInput}
           />
-          <button type="submit" style={{ width: '56px', height: '56px', background: '#3b82f6', borderRadius: '50%', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.3s' }} onMouseOver={(e) => e.currentTarget.style.background = '#2563eb'} onMouseOut={(e) => e.currentTarget.style.background = '#3b82f6'}>
+          <button type="submit" className={styles.sendBtn} aria-label="Send message">
             <Send size={24} />
           </button>
         </form>
       </div>
 
-      <SmartRoutinesModal 
+      <SmartRoutinesModal
         isOpen={routinesOpen} 
         onClose={() => setRoutinesOpen(false)} 
         onTrigger={(phrase) => {

@@ -1,0 +1,787 @@
+/* Guest App — mobile-first responsive layout */
+
+.app {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0a0b10;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Ambient glow — gives glass panels something to blur against */
+.app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 55% 45% at 12% 18%, rgba(59, 130, 246, 0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 88% 12%, rgba(139, 92, 246, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(16, 185, 129, 0.06) 0%, transparent 55%);
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: clamp(11rem, 24vh, 14rem);
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 2.5vw, 2rem) clamp(1rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2rem);
+}
+
+/* Shared glass surface mixin via class */
+.glassSurface {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+/* ── Header ───────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  margin-bottom: clamp(1.25rem, 3vw, 2rem);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  min-width: 0;
+  width: 100%;
+}
+
+.avatar {
+  width: clamp(3rem, 8vw, 5rem);
+  height: clamp(3rem, 8vw, 5rem);
+  border-radius: 50%;
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  flex-shrink: 0;
+}
+
+.userText {
+  min-width: 0;
+  flex: 1;
+}
+
+.welcome {
+  color: #94a3b8;
+  margin: 0;
+  font-size: clamp(0.875rem, 2vw, 1.125rem);
+}
+
+.userName {
+  color: white;
+  margin: 0.25rem 0 0;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.roomMeta {
+  color: #3b82f6;
+  margin: 0.25rem 0 0;
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+  font-weight: 500;
+}
+
+.iconBtn {
+  width: clamp(2.5rem, 6vw, 3rem);
+  height: clamp(2.5rem, 6vw, 3rem);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.iconBtnDanger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.headerCards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(0.75rem, 2vw, 1rem);
+  width: 100%;
+}
+
+@media (min-width: 720px) {
+  .headerCards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+}
+
+.infoCard {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: clamp(1rem, 3vw, 2rem);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  display: flex;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  align-items: center;
+  min-width: 0;
+  height: 100%;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+.infoCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.infoCardLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.infoCardLabel p {
+  margin: 0;
+  font-size: clamp(0.6875rem, 1.6vw, 0.875rem);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.timeRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.timeValue {
+  color: white;
+  margin: 0;
+  font-size: clamp(1.75rem, 5vw, 2.625rem);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.timePeriod {
+  font-size: clamp(0.875rem, 2vw, 1.125rem);
+  font-weight: 500;
+}
+
+.timeSub {
+  margin: 0.5rem 0 0;
+  font-size: clamp(0.8125rem, 1.8vw, 0.9375rem);
+  color: #94a3b8;
+}
+
+.infoCardIcon {
+  padding-left: clamp(1rem, 2.5vw, 2rem);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.weatherTemp {
+  color: white;
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 300;
+  line-height: 1;
+}
+
+.routinesBtn {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.18) 0%,
+    rgba(59, 130, 246, 0.06) 100%
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: clamp(1rem, 3vw, 2rem);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-height: 100%;
+  width: 100%;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+.routinesBtn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 16px 40px rgba(59, 130, 246, 0.25), var(--glass-highlight);
+}
+
+.routinesIcon {
+  background: #3b82f6;
+  border-radius: 50%;
+  width: clamp(2.5rem, 6vw, 3rem);
+  height: clamp(2.5rem, 6vw, 3rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.routinesLabel {
+  color: white;
+  font-weight: 600;
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  text-align: center;
+}
+
+/* ── Room tabs ─────────────────────────────────────────── */
+
+.roomTabs {
+  display: flex;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+  overflow-x: auto;
+  margin-bottom: clamp(1.25rem, 3vw, 2.5rem);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.25rem;
+}
+
+.roomTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.roomTab {
+  padding: clamp(0.625rem, 2vw, 1rem) clamp(1rem, 3vw, 2rem);
+  border-radius: 999px;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  font-size: clamp(0.8125rem, 1.8vw, 1rem);
+  font-weight: 400;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.roomTabActive {
+  background: white;
+  color: black;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+}
+
+.roomTabInactive {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ── Dashboard grid ────────────────────────────────────── */
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+@media (min-width: 900px) {
+  .dashboard {
+    grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* ── AC panel ──────────────────────────────────────────── */
+
+.acPanel {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-radius: clamp(1.25rem, 3vw, 2.5rem);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-shadow-lg), var(--glass-highlight);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.acHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.acTitle {
+  color: white;
+  margin: 0;
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+}
+
+.acSubtitle {
+  color: #94a3b8;
+  margin: 0.25rem 0 0;
+  font-size: clamp(0.8125rem, 1.8vw, 0.875rem);
+}
+
+.powerBtn {
+  border: none;
+  padding: clamp(0.75rem, 2vw, 1rem);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.powerBtnOn {
+  background: #10b981;
+}
+
+.powerBtnOff {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.acDialWrap {
+  position: relative;
+  width: min(100%, 300px);
+  max-width: 300px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.acDial {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acDialOn {
+  box-shadow: 0 0 60px rgba(56, 189, 248, 0.15);
+}
+
+.acDialSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.acDialCenter {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 1.5rem;
+}
+
+.acDialLabel {
+  color: #94a3b8;
+  font-size: clamp(0.6875rem, 1.6vw, 0.875rem);
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.12em;
+}
+
+.acDialTemp {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.acDialTempValue {
+  font-size: clamp(2.5rem, 10vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.acDialTempUnit {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  font-weight: 700;
+  margin-top: 0.35rem;
+}
+
+.acDialAmbient {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.acDialAmbient p {
+  color: #38bdf8;
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+  margin: 0;
+}
+
+.acDialBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: white;
+  width: clamp(2.5rem, 8vw, 3.5rem);
+  height: clamp(2.5rem, 8vw, 3.5rem);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+  padding: 0;
+}
+
+.acDialBtnMinus {
+  left: 2%;
+}
+
+.acDialBtnPlus {
+  right: 2%;
+}
+
+/* ── Device grid ───────────────────────────────────────── */
+
+.deviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  align-content: start;
+  width: 100%;
+  min-width: 0;
+}
+
+.deviceCard {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  min-width: 0;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+.deviceCard:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), var(--glass-highlight);
+}
+
+.deviceCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.deviceIcon {
+  width: clamp(2.75rem, 7vw, 3.5rem);
+  height: clamp(2.75rem, 7vw, 3.5rem);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.deviceToggle {
+  width: 3rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  position: relative;
+  transition: 0.3s;
+  flex-shrink: 0;
+}
+
+.deviceToggleKnob {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 2px;
+  transition: 0.3s;
+}
+
+.deviceTitle {
+  margin: 0;
+  color: white;
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  font-weight: 500;
+}
+
+.deviceStatus {
+  margin: 0.5rem 0 0;
+  color: #94a3b8;
+  font-size: clamp(0.8125rem, 1.8vw, 0.875rem);
+}
+
+.alarmCard {
+  border-radius: clamp(1rem, 2.5vw, 1.5rem);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.25rem);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+}
+
+.alarmTimeInput {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: white;
+  padding: 0.625rem 1rem;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  color-scheme: dark;
+}
+
+.alarmDismiss {
+  background: #f97316;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  padding: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.12em;
+  transition: background 0.2s;
+}
+
+.alarmDismiss:hover {
+  background: #ea6c00;
+}
+
+/* ── Floating chat stack (bottom-center, not docked) ─── */
+
+.chatFloat {
+  position: absolute;
+  bottom: clamp(1.25rem, 4vw, 2.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92%, 56rem);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  pointer-events: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.chatFloat > * {
+  pointer-events: auto;
+}
+
+.chatBubbleFloat {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.chatFormFloat {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  background: rgba(18, 20, 28, 0.6);
+  padding: 0.5rem 0.5rem 0.5rem clamp(0.75rem, 2vw, 1.5rem);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.chatBubble {
+  padding: 0.875rem 1.5rem;
+  border-radius: 999px;
+  max-width: min(92%, 36rem);
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  line-height: 1.5;
+  color: white;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  word-break: break-word;
+}
+
+.chatBubbleUser {
+  background: rgba(59, 130, 246, 0.55);
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+.chatBubbleAi {
+  background: rgba(30, 34, 48, 0.5);
+}
+
+
+.micBtn {
+  width: clamp(2.5rem, 7vw, 3rem);
+  height: clamp(2.5rem, 7vw, 3rem);
+  border-radius: 50%;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.micBtnIdle {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.micBtnActive {
+  background: #ef4444;
+}
+
+.chatInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: clamp(0.9375rem, 2vw, 1.125rem);
+  outline: none;
+}
+
+.chatInput::placeholder {
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.sendBtn {
+  width: clamp(2.75rem, 7vw, 3.5rem);
+  height: clamp(2.75rem, 7vw, 3.5rem);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 50%;
+  color: white;
+  border: 1px solid rgba(147, 197, 253, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s, box-shadow 0.3s;
+  flex-shrink: 0;
+  padding: 0;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.sendBtn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+@media (max-width: 420px) {
+  .infoCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .infoCardIcon {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.75rem;
+    justify-content: flex-start;
+  }
+
+  .headerTop {
+    gap: 0.625rem;
+  }
+
+  .avatar {
+    display: none;
+  }
+}
